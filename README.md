@@ -1,87 +1,83 @@
 #   README
 *
-* a minimal Open Object Rexx distribution
-* Linux, Darwin, Freebsd, OpenBSD only
-* NO Windows, AIX, SUN, HAIKU, zOS
+* a light Open Object Rexx distribution for :
+* Darwin
+* Linux, Freebsd, ( might be )
+* NO Windows, AIX, SUN, HAIKU, zOS, ...
 * * *
 
 ##  COPYRIGHT
 *
 * the original software
-* is copyright of the original owners under the original licence
-* see:
+* is copyright of the original authors owners under the original licence
+*
 * `https://svn.code.sf.net/p/oorexx/code-0/main/trunk`
 * `https://svn.code.sf.net/p/oorexx/code-0/test/trun`
 *
 * source code changes are dedicated to the public domain
 *
 * the cmake infrastructure is
-* Copyright (c) 2019, 2020 Enrico Sorichetti
+* Copyright (c) 2019, 2023 Enrico Sorichetti
 * Distributed under the Boost Software License, Version 1.0.
-* See accompanying file `LICENSE_1_0.txt` or copy at
+* See accompanying file `BOOST_LICENSE_1_0.txt` or copy at
 * `[http://www.boost.org/LICENSE_1_0.txt](http://www.boost.org/LICENSE_1_0.txt)`
 * * *
 
 ##  REPOSITORY
 *
-* `https://github.com/atncsj6h/ooRexx.git`
-* `git@github.com:atncsj6h/ooRexx.git`
+* `https://github.com/atncsj6h/ooRexx-5.1.0.git`
+* `git@github.com:atncsj6h/ooRexx-5.1.0.git`
 * * *
 
-
-##  prerequisites
-*   cmake ( minimum 3.12 )
-*   clang ( will not work with gcc ! )
-*   bison
-*   they can be installed using the system package manager
-*   Or downloaded from
-*   sources
-*       https://cmake.org/download/
-*       https://ftp.gnu.org/gnu/bison/
-*   binaries
-*       https://releases.llvm.org/download.html
-* * *
-##  PREREQUISITES
+##  PREREQUISITES ( system )
 *
-* cmToolKit
-* at `https://github.com/atncsj6h/cmToolKit.git`
-* or `git@github.com:atncsj6h/cmToolKit.git`
+* cmake, clang ( ? ), bison
 *
-* cmake at least 3.20
-* at `https://cmake.org/download/`
+* the binaries can be installed using the system package manager
 *
-* clang
+* cmake ( 3.24 should work )
+* binaries ( Drag and Drop Installer ) for Darwin
+* sources
+* `https://cmake.org/download/`
+*
+* clang ( once upon a time gcc used to have issues, might work now ?! )
+* binaries ( system packages )
+* sources/current binaries
+* `https://releases.llvm.org/download.html`
 *
 * bison
+* binaries ( system packages )
+* sources
+* `https://ftp.gnu.org/gnu/bison`
+* * *
+
+##  PREREQUISITES ( Local )
+*
+* cmToolKit
+* `https://github.com/atncsj6h/cmToolKit.git`
+* `git@github.com:atncsj6h/cmToolKit.git`
+* * *
+
+##  NICE TO HAVE  ( Local )
+*
+* ccache ( to speed up builds repetitve builds )
+* binaries ( system packages )
+* sources
+* `https://github.com/ccache/ccache/releases`
+*
+* ninja ( a make/gmake alternative )
+* binaries ( system packages )
+* sources
+* `https://github.com/ninja-build/ninja/releases`
 *
 * pkgconf
-* at `https://github.com/pkgconf/pkgconf/releases`
+* binaries ( system packages )
+* sources
+* `https://github.com/pkgconf/pkgconf/releases`
 * * *
 
-##  NICE TO HAVE
+##  How to ( will come later )
 *
-* ccache to speed up builds
-* at `https://github.com/ccache/ccache/releases`
-*
-* ninja, a make alternative
-* at `https://github.com/ninja-build/ninja/releases`
-* * *
-
-##  How to ( my setup )
-*   naming convention and layout
-*   <somewhere>/ooRexx.git
-*   <somewhere>/ooRexx.git.build
-*   <somewhere>/ooRexx
-*   ( the <somewhere>/ooRexx/bin directory should be appended to the PATH )
-*
-* cd <somewhere>
-* git clone ... ooRexx.git
-* mkdir ooRexx.git.build
-*
-* cd ooRexx.git.build
-* `_cmake`
-* `REXX_PATH=``pwd``/bin make`
-* `REXX_PATH=``pwd``/bin make install`
 * * *
 
 ##  Additional considerations
@@ -89,18 +85,11 @@
 * * *
 
 ##  tested and working on
-*   APPLE El Capitan
-*   APPLE High Sierra
-*   APPLE Mojave
-*   Fedora 31
-*   Centos 8
-*   FreeBSD 12.1
-*   FreeBSD 13.0
-*   OpenBSD 6 ( work in progress )
+*
+* APPLE M1,Intel - native, universal binaries ( cross checked )
+* Linux ( work in progress )
 * * *
 
 ##  NOTES
-*   [Markdown Information](https://bitbucket.org/tutorials/markdowndemo)
+* [Markdown Information](https://bitbucket.org/tutorials/markdowndemo)
 * * *
-
-
