@@ -33,6 +33,7 @@ list( APPEND TEMPL_SOURCE_PATH $ENV{CMTK}/cmake/Templates )
 include( vDump )
 include( vDrop )
 include( vSnap )
+set( VDEBUG ON )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # deprecate 'in-source' builds ( source directory/subdirectories )
@@ -75,14 +76,12 @@ set( VERSION_RELEASE  1 )
 set( VERSION_MODIFICATION  0)
 set( VERSION_BUILD 0 )
 
+set( PLATFORM Unix )
+
 set( DESCRIPTION "Open Object Rexx interpreter and libraries." )
 set( PROVIDES rexx rexxapi )
 set( REQUIRES )
 set( SOVERSION 4 )
-
-set( EXENAME rexx )
-set( PLATFORM unix )
-set( PLATFORM_DIR platform/unix )
 
 project( ${PROJECT}
   VERSION ${VERSION}
@@ -96,6 +95,11 @@ set( VERSION_STRING "${VERSION_STRING}-${CMAKE_SYSTEM_PROCESSOR}" )
 if( APPLE AND BUILD_OSX_UNIVERSAL_BINARIES )
   set( CMAKE_OSX_ARCHITECTURES arm64 x86_64 )
   set( VERSION_STRING "${VERSION_STRING}-universal" )
+endif()
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if( PRIVATE )
+  add_compile_definitions( PRIVATE )
 endif()
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -127,9 +131,12 @@ add_compile_definitions(
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # setup the install paths according to the GNU standards
-set( WELL_KNOWN_PREFIX_LIST  /usr /usr/local /opt /opt/local )
-if( NOT( "${CMAKE_INSTALL_PREFIX}" IN_LIST WELL_KNOWN_PREFIX_LIST ) )
-  set( FLAT_INSTALL 1 )
+include( GNUInstallDirs )
+
+set( WELL_KNOWN_PREFIX_LIST  /usr /usr/local /opt /opt/local $ENV{HOME}/GNULayout )
+vsnap( WELL_KNOWN_PREFIX_LIST )
+if( "${CMAKE_INSTALL_PREFIX}" IN_LIST WELL_KNOWN_PREFIX_LIST )
+  set( GNUINSTALLDIRS 1 )
 endif( )
 
 include( installDirectories )
@@ -142,8 +149,13 @@ set( CMAKE_SAMPLES_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/samples )
 set( INST_CLASSES "${INST_BIN_DIR}" )
 set( INST_REXXIMG "${INST_LIB_DIR}" )
 
+vsnap( INST_DATADIR )
+
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 include( dirnames )
+vsnap( PLATFORM platform_dir )
+vsnap( platform platform_dir )
+
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # To ensure the required libraries are always found, regardless of whether
@@ -234,14 +246,14 @@ include( checkHeader )
 include( isoHeaders )
 
 # the other headers
-include( headers )
+include( sysHeaders )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # functions
 include( CheckFunctionExists )
 include( checkFunction )
 
-include( functions )
+include( sysFunctions )
 
 check_function_exists( _NSGetExecutablePath HAVE_NSGETEXECUTABLEPATH )
 
@@ -317,7 +329,7 @@ check_pragma_diagnostics( "stringop-overflow" )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 include_directories( ${CMAKE_BINARY_DIR} )
-include_directories(BEFORE api api/${PLATFORM_DIR})
+include_directories(BEFORE api api/${platform_dir})
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 add_compile_definitions(
@@ -358,7 +370,6 @@ endforeach()
 include( dirnames )
 include( buildExecutables )
 
-#
 set( SUFF _exe )
 set( EXECUTABLES rexx rexxc rexximage rxapi rxqueue rxsubcom )
 
@@ -400,16 +411,23 @@ install( PROGRAMS ${CMAKE_REXXIMG_OUTPUT_DIRECTORY}/rexx.img
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Licenses and Notices
-macro( install_lic argv )
+macro( install_NOTICES argv )
   install( FILES ${argv}
     DESTINATION ${INST_DATADIR}/NOTICES
-    USE_SOURCE_PERMISSIONS )
-endmacro( install_lic )
+    PERMISSIONS OWNER_READ OWNER_WRITE
+                GROUP_READ
+                WORLD_READ )
 
-install_lic( ${CMAKE_SOURCE_DIR}/CPLv1.0.txt  )
-install_lic( ${CMAKE_SOURCE_DIR}/BOOST_LICENSE_1.0.txt )
-install_lic( ${CMAKE_SOURCE_DIR}/NOTICE ${CMAKE_SOURCE_DIR} )
-install_lic( ${CMAKE_SOURCE_DIR}/CHANGES ${CMAKE_SOURCE_DIR} )
+endmacro( install_NOTICES )
+
+install_NOTICES( ${CMAKE_SOURCE_DIR}/README.txt  )
+install_NOTICES( ${CMAKE_SOURCE_DIR}/CPLv1.0.txt  )
+install_NOTICES( ${CMAKE_SOURCE_DIR}/BOOST_LICENSE_1.0.txt )
+install_NOTICES( ${CMAKE_SOURCE_DIR}/NOTICE-ooRexx ${CMAKE_SOURCE_DIR} )
+install_NOTICES( ${CMAKE_SOURCE_DIR}/NOTICE-this ${CMAKE_SOURCE_DIR} )
+install_NOTICES( ${CMAKE_SOURCE_DIR}/CHANGES-ooRexx ${CMAKE_SOURCE_DIR} )
+install_NOTICES( ${CMAKE_SOURCE_DIR}/CHANGES-this ${CMAKE_SOURCE_DIR} )
+install_NOTICES( ${CMAKE_SOURCE_DIR}/USAGE-this ${CMAKE_SOURCE_DIR} )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # the support files
@@ -418,7 +436,9 @@ install_lic( ${CMAKE_SOURCE_DIR}/CHANGES ${CMAKE_SOURCE_DIR} )
 macro( install_X argv )
   install( FILES ${CMAKE_SOURCE_DIR}/${argv}
     DESTINATION ${INST_BIN_DIR}
-    USE_SOURCE_PERMISSIONS )
+    PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
+                GROUP_EXECUTE GROUP_READ
+                WORLD_EXECUTE WORLD_READ )
 endmacro( install_X )
 
 # recommended
@@ -454,9 +474,11 @@ endforeach()
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # manpages
 macro( install_manpages page indx )
-  install( FILES ${PLATFORM_DIR}/${page}.${indx}
+  install( FILES ${platform_dir}/${page}.${indx}
     DESTINATION ${INST_MAN_DIR}/man${indx}
-    USE_SOURCE_PERMISSIONS )
+    PERMISSIONS OWNER_READ OWNER_WRITE
+                GROUP_READ
+                WORLD_READ )
 endmacro( install_manpages )
 
 install_manpages( rexx 1 )
@@ -470,7 +492,6 @@ foreach( X path.here path.append path.remove )
   install_X( ${support_dir}/bin/${X} )
 endforeach()
 
-#
 install( DIRECTORY support
   DESTINATION "."
   USE_SOURCE_PERMISSIONS )
@@ -483,8 +504,14 @@ install( DIRECTORY samples
   PATTERN "windows" EXCLUDE
   PATTERN "*.windows" EXCLUDE
   PATTERN "CMakeLists.*" EXCLUDE
-  USE_SOURCE_PERMISSIONS )
-
+  PATTERN "*.rex"
+  PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
+              GROUP_EXECUTE GROUP_READ
+              WORLD_EXECUTE WORLD_READ
+  PATTERN "*.cls"
+  PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
+              GROUP_EXECUTE GROUP_READ
+              WORLD_EXECUTE WORLD_READ )
 
 # technically samples, but nice to have in the binary dir
 foreach( X rexxtry.rex rexxcps.rex )
@@ -498,14 +525,28 @@ install( DIRECTORY samples/api/c++
   PATTERN "windows" EXCLUDE
   PATTERN "*.windows" EXCLUDE
   PATTERN "CMakeLists.*" EXCLUDE
-  USE_SOURCE_PERMISSIONS )
+  PATTERN "*.rex"
+  PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
+              GROUP_EXECUTE GROUP_READ
+              WORLD_EXECUTE WORLD_READ
+  PATTERN "*.cls"
+  PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
+              GROUP_EXECUTE GROUP_READ
+              WORLD_EXECUTE WORLD_READ )
 
 install( DIRECTORY samples/api/classic
   DESTINATION ${INST_DATADIR}/apisamples
   PATTERN "windows" EXCLUDE
   PATTERN "*.windows" EXCLUDE
   PATTERN "CMakeLists.*" EXCLUDE
-  USE_SOURCE_PERMISSIONS )
+  PATTERN "*.rex"
+  PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
+              GROUP_EXECUTE GROUP_READ
+              WORLD_EXECUTE WORLD_READ
+  PATTERN "*.cls"
+  PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
+              GROUP_EXECUTE GROUP_READ
+              WORLD_EXECUTE WORLD_READ )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # the external libraries

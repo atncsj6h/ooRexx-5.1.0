@@ -37,12 +37,6 @@ while true ; do
       continue
       ;;
 
-    -fi | -fileicon | --fileicon )
-      FILEICON="${2}"
-      shift 2 || { Usage 1 ; }
-      continue
-      ;;
-
     -manifest | --manifest )
       MANIFEST="${2}"
       shift 2 || { Usage 1 ; }
@@ -94,24 +88,6 @@ if  [ "${MAKESELF}".  != "". ] ; then
   if  ! test -x ${MAKESELF} ; then
     echo "@@ unable to build the self extracting installer"
     MAKESELF=""
-  fi
-fi
-
-# accomodate for fileicon being in different places
-if  [ "${FILEICON}".  == "". ] ; then
-  FILEICON="$(which fileicon)"
-fi
-if  [ "${FILEICON}".  == "". ] ; then
-  if    test -f "/usr/local/bin/fileicon" ; then
-    FILEICON="/usr/local/bin/fileicon"
-  else
-    echo "@@ unable to attach icons to files/directories"
-  fi
-fi
-if  [ "${FILEICON}".  != "". ] ; then
-  if  ! test -x ${FILEICON} ; then
-    echo "@@ unable to attach icons to files/directories"
-    FILEICON=""
   fi
 fi
 

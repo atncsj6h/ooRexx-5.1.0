@@ -46,12 +46,22 @@
 # include "config.h"
 #endif
 
-#include "SysLibrary.hpp"
+
+#if defined( PRIVATE )
+#define  _DARWIN_BETTER_REALPATH
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <dlfcn.h>
+
+#include "SysLibrary.hpp"
 #include "SysProcess.hpp"
+
+#if defined( PRIVATE )
+#include <errno.h>
+#endif
 
 SysLibrary::SysLibrary()
 {
@@ -75,14 +85,61 @@ bool SysLibrary::load(
 /* Function:  Load a named library, returning success/failure flag            */
 /******************************************************************************/
 {
-    char nameBuffer[PC_PATH_MAX+PC_NAME_MAX+1];
+    char nameBuffer[PC_PATH_MAX];
 
     if (strlen(name) > PC_NAME_MAX-16)
     {
         return false;
     }
 
+    #if defined( PRIVATE )
+
+    // try an ASIS load
+    printf("SysLibrary.cpp trying an ASIS load >>%s<<\n", name );
+    libraryHandle = dlopen(name, RTLD_LAZY);
+    if (libraryHandle)
+    {
+        return true;
+    }
+
+    // try an RPATH load
+    printf("SysLibrary.cpp trying a RPATH load >>%s<<\n", name );
+    char *res = realpath( name, nameBuffer ) ;
+    printf("SysLibrary.cpp  res(uncond) >%s<\n", res ) ;
+    printf("SysLibrary.cpp  buf(uncond) >%s<\n", nameBuffer );
+
+
+    libraryHandle = dlopen(nameBuffer, RTLD_LAZY);
+    if (libraryHandle)
+    {
+        return true;
+    }
+
+    #if 0
+    char *res = realpath( name, nameBuffer );
+      printf("SysLibrary.cpp  res(uncond) >%s<\n", res ) ;
+      printf("SysLibrary.cpp  buf(uncond) >%s<\n", nameBuffer );
+    if ( res )
+    {
+      printf("SysLibrary.cpp  res not NULL\n");
+      printf("SysLibrary.cpp  res         >%s<\n", res ) ;
+      printf("SysLibrary.cpp  nameBuffer  >%s<\n", nameBuffer );
+    }
+    else
+    {
+      printf("SysLibrary.cpp  res NULLNULL\n");
+      printf("SysLibrary.cpp  res         >%s<\n", res ) ;
+      printf("SysLibrary.cpp  nameBuffer  >%s<\n", nameBuffer );
+
+      char* errStr = strerror(errno);
+      printf("SysLibrary.cpp  error string>%s<\n" , errStr);
+    }
+    #endif
+
+    #endif
+
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     APPLE man dlopen is clear about the fact that the `cwd` is searched first
 
     Linux on the other side tells nothing , but the results of testing is
@@ -90,6 +147,8 @@ bool SysLibrary::load(
 
     so I guess we lose nothing by forcing a cwd search
     */
+
+    // printf( "the system search path >>%s<<\n", getenv( "PATH" ) );
 
     // try a `cwd` load
     sprintf(nameBuffer, "./%s%s%s",
@@ -131,6 +190,9 @@ bool SysLibrary::load(
     {
         return true;
     }
+
+    // try a load from the library implied by the rexx executable location
+    //
 
     return false;
 

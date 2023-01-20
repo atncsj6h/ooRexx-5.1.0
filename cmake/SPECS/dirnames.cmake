@@ -62,6 +62,6 @@ set( api_dir api )
 set( api_platform_dir api/platform/${PLATFORM} )
 
 set( samples_dir samples )
-set( support_dir  support )
+set( support_dir support )
 
 set(SAMPLES_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/${samples_dir} )
