@@ -3,12 +3,12 @@
 include_guard( GLOBAL )
 
 set( rexx_exe_SRCS
-  ${utilities_rexx_dir}/rexx.cpp
+  ${executables_rexx_dir}/rexx.cpp
 )
 
 # Include file definition
 set( rexx_exe_include_DIRS
-  ${lib_dir}
+  ${internals_dir}
   ${api_dir}
   ${api_platform_dir}
   ${messages_dir}

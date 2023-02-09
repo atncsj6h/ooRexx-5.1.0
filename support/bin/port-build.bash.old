@@ -1,0 +1,178 @@
+#! /usr/bin/env bash
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function Usage() {
+  exit $1
+}
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function __yesno() {
+  for ((;;)) ; do
+    echo "${1}Enter [y](ENTER) to continue"
+    echo "${1}      [n/q]      to Exit"
+    read z
+    if [ "${z}". == . ] ; then
+        return 0
+    fi
+    z=${z^^}
+    z=${z:0:1}
+    case ${z} in
+      Y)  return 0
+          ;;
+      N | Q )  return 1
+          ;;
+      *)  echo "${1}Invalid Reply '${z}'"
+          ;;
+    esac
+  done
+}
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+me="build   "
+
+echo "@@  $me - at entry"
+echo "@@"
+echo "@@  $me - \$0    '$0'"
+echo "@@  $me - argc  ($#)"
+echo "@@  $me - args  '$@'"
+echo "@@"
+
+confirm=1
+triplet=""
+version=""
+PORTDIR=""
+MAKESELF="support/bin/makeself.sh"
+MANIFEST="portable"
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+while true ; do
+
+  flag=$(printf "%s" $1 )
+
+  case "${flag}" in
+
+	  -y | --yes)
+	    yesno=y
+      shift 1 || { Usage 1 ; }
+      continue
+    ;;
+
+    -DOT | -triplet | --triplet )
+      triplet="${2}"
+      shift 2 || { Usage 1 ; }
+      continue
+      ;;
+
+    -VER | -version | --version )
+      version="${2}"
+      shift 2 || { Usage 1 ; }
+      continue
+      ;;
+
+    -DIR | -portdir | --portdir)
+      PORTDIR="${2}"
+      shift 2 || { Usage 1 ; }
+      continue
+      ;;
+
+    -MS | -makeself | --makeself )
+      MAKESELF="${2}"
+      shift 2 || { Usage 1 ; }
+      continue
+      ;;
+
+    -MAN | -manifest | --manifest )
+      MANIFEST="${2}"
+      shift 2 || { Usage 1 ; }
+      continue
+    ;;
+
+    -p | -prefix | --prefix )
+      prefix="${2}"
+      shift 2 || { Usage 1 ; }
+      continue
+    ;;
+
+    -- )
+      shift 1  || { Usage 1 ; }
+      break
+    ;;
+
+    "-"*)
+	    echo "@@  $me - Unrecognized flag :"$1
+      exit 1
+	  ;;
+
+    *)
+	    break
+	  ;;
+
+  esac
+
+done
+
+echo "@@  $me - after argument parsing"
+echo "@@"
+echo "@@  $me - argc  ($#)"
+echo "@@  $me - args  '$@'"
+echo "@@"
+
+
+# accomodate for makeself.sh being in different places
+if  [ "${MAKESELF}".  == "". ] ; then
+  MAKESELF="$(which makeself.sh)"
+fi
+if  [ "${MAKESELF}".  == "". ] ; then
+  if    test -f "/usr/local/bin/makeself.sh" ; then
+    MAKESELF="/usr/local/bin/makeself.sh"
+  else
+    echo "@@  $me - unable to build the self extracting installer"
+  fi
+fi
+if  [ "${MAKESELF}".  != "". ] ; then
+  if  ! test -x ${MAKESELF} ; then
+    echo "@@  $me - unable to build the self extracting installer"
+    MAKESELF=""
+  fi
+fi
+
+# ask for confirmation
+if  [ -z ${yesno} ] ; then
+  __yesno "${me} - "
+  RC=$?
+
+  if [ ${RC} -eq 1 ] ; then
+    echo "${me} - canceled"
+    exit 1
+  fi
+fi
+
+echo "@@  $me - installing '${PORTDIR}/ooRexx-${version}' "
+CMAKE_MANIFEST_PREFIX=${MANIFEST} cmake -DCMAKE_INSTALL_PREFIX=${PORTDIR}/ooRexx-${version} -P cmake_install.cmake 1>/dev/null
+RC=$?
+echo "@@  $me - cmake rc("$RC")"
+echo "@@"
+
+##  Usage: makeself.sh [args] archive_dir file_name label startup_script [script_args]
+
+if  [ "${MAKESELF}".  != "". ] ; then
+  echo "@@  $me - building the self extracting pkg"
+  echo "@@  ****************"
+
+  ${MAKESELF} --xz --sha256 \
+    --tar-quietly \
+    --license portable/ooRexx-5.1.0/share/NOTICES/CPLv1.0.txt \
+    --cleanup ./support/bin/port-cleanup.sh \
+    portable/ooRexx-${version} ooRexx-${version}.run "ooRexx" ./support/bin/port-startup.sh
+  RC=$?
+  echo "@@  ****************"
+  echo "@@  $me - makeself rc("$RC")"
+  echo "@@"
+fi
+
+echo "@@  $me - bye"
+echo "@@"
+
+exit
+

@@ -13,7 +13,7 @@ set( platform_rxmath_SRCS
 
 # Include file definition
 set( rxmath_include_DIRS
-  ${lib_dir}
+  ${internals_dir}
   ${api_dir}
   ${api_platform_dir}
 )

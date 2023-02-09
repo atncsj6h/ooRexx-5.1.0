@@ -576,7 +576,7 @@ RexxRoutine0(RexxStringObject, SockVersion)
 {
     char buffer[256];
 
-    sprintf(buffer, "%d.%d.%d", ORX_VER, ORX_REL, ORX_MOD);
+    sprintf(buffer, "%s", VERSION_TRIPLET );
     return context->String(buffer);
 }
 

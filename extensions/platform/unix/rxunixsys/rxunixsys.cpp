@@ -286,11 +286,7 @@ RexxRoutine0(RexxObjectPtr,
 RexxRoutine0(RexxObjectPtr,
              SysSetpgrp)
 {
-#if defined(OPENBSD) || defined(OPSYS_NETBSD) || defined(OPSYS_FREEBSD)
-    return context->WholeNumberToObject((wholenumber_t)setpgrp(0, 0));
-#else
-    return context->WholeNumberToObject((wholenumber_t)setpgrp());
-#endif
+    return context->WholeNumberToObject((wholenumber_t)setpgid(0,0));
 }
 
 
@@ -775,14 +771,14 @@ RexxRoutine2(RexxObjectPtr,
              CSTRING, ichar)
 {
     struct tm *ftime;
-    struct stat64 st;
+    struct stat st;
     char buf[32];  // used for both the file times and the permissions
 
     if (strlen(fname) == 0 || strlen(ichar) == 0) {
         context->InvalidRoutine();
         return context->NullString();
     }
-    int retc = stat64(fname, &st);
+    int retc = stat(fname, &st);
     if (retc != 0) {
         return context->NullString();
     }

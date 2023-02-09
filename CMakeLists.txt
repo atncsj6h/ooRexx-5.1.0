@@ -27,13 +27,12 @@ list( APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/SPECS )
 list( APPEND CMAKE_MODULE_PATH $ENV{CMTK}/cmake/Modules )
 
 set( TEMPL_SOURCE_PATH ${CMAKE_SOURCE_DIR} )
-list( APPEND TEMPL_SOURCE_PATH ${CMAKE_SOURCE_DIR}/cmake/Templates )
+list( APPEND TEMPL_SOURCE_PATH ${CMAKE_SOURCE_DIR}/cmake/TEMPL )
 list( APPEND TEMPL_SOURCE_PATH $ENV{CMTK}/cmake/Templates )
 
 include( vDump )
 include( vDrop )
 include( vSnap )
-set( VDEBUG ON )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # deprecate 'in-source' builds ( source directory/subdirectories )
@@ -68,28 +67,72 @@ if( APPLE AND BUILD_OSX_UNIVERSAL_BINARIES )
 endif()
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#
 set( PROJECT ooRexx )
-set( VERSION 5.1.0 )
-set( VERSION_MAJOR 5 )
-set( VERSION_RELEASE  1 )
-set( VERSION_MODIFICATION  0)
-set( VERSION_BUILD 0 )
+set( VERSION  5 )
+set( RELEASE  1 )
+set( MODLEVL  0 )
 
-set( PLATFORM Unix )
+# let's set the revision/BLDLEVL to 0 for now
+# will deal later with different SCMs ( subverion/git )
+set( BLDLEVL  0 )
+
+set( VERSION_TRIPLET "${VERSION}.${RELEASE}.${MODLEVL}" )
+
+set( EXENAME rexx )
+
+set( SOVERSION 4 )
+
+set( PLATFORM unix )
 
 set( DESCRIPTION "Open Object Rexx interpreter and libraries." )
 set( PROVIDES rexx rexxapi )
 set( REQUIRES )
-set( SOVERSION 4 )
 
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 project( ${PROJECT}
-  VERSION ${VERSION}
+  VERSION ${VERSION_TRIPLET}
   LANGUAGES C CXX
 )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-set( VERSION_STRING "${VERSION}" )
+# check if the required libraries are available
+# and terminate if not
+include( pkgConfig )
+pkg_config( ${REQUIRES} )
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+set( CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION ON )
+set( CPACK_WARN_ON_ABSOLUTE_INSTALL_DESTINATION ON )
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# system name
+set( SYSTEM_NAME "${CMAKE_SYSTEM_NAME}" )
+string( TOUPPER "${SYSTEM_NAME}" SYSTEM_NAME_UC )
+set( "${SYSTEM_NAME_UC}" 1 )
+add_compile_definitions(
+  SYSTEM_NAME="${SYSTEM_NAME}"
+  SYSTEM_NAME_UC="${SYSTEM_NAME_UC}"
+  ${SYSTEM_NAME_UC}
+)
+
+# processor
+set( SYSTEM_PROCESSOR "${CMAKE_SYSTEM_PROCESSOR}" )
+string( TOUPPER "${SYSTEM_PROCESSOR}" SYSTEM_PROCESSOR )
+set( "${SYSTEM_PROCESSOR}" 1 )
+add_compile_definitions(
+  ${SYSTEM_PROCESSOR}
+  SYSTEM_PROCESSOR="${CMAKE_SYSTEM_PROCESSOR}"
+)
+
+# architecture
+math( EXPR arch  "8 * ${CMAKE_SIZEOF_VOID_P}" OUTPUT_FORMAT DECIMAL)
+if( NOT ( CMAKE_SIZEOF_VOID_P MATCHES 8 ) )
+  message( WARNING "
+ likely unsupported Architecture '${arch}-bits'" )
+endif()
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+set( VERSION_STRING "${VERSION_TRIPLET}" )
 set( VERSION_STRING "${VERSION_STRING}-${CMAKE_SYSTEM_PROCESSOR}" )
 
 if( APPLE AND BUILD_OSX_UNIVERSAL_BINARIES )
@@ -97,26 +140,21 @@ if( APPLE AND BUILD_OSX_UNIVERSAL_BINARIES )
   set( VERSION_STRING "${VERSION_STRING}-universal" )
 endif()
 
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if( PRIVATE )
-  add_compile_definitions( PRIVATE )
-endif()
 
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# let's set the revision to 0 for now
-# will deal later with different SCMs ( subverion/git )
 add_compile_definitions(
-  REXX_VERSION="${VERSION}"
-  REXX_VERSION_REVISION=${VERSION_BUILD}
-  REXX_ARCHITECTURE="64"
+  VERSION=${VERSION}
+  RELEASE=${RELEASE}
+  MODLEVL=${MODLEVL}
+  BLDLEVL=${BLDLEVL}
+  VERSION_TRIPLET="${VERSION_TRIPLET}"
 )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 string( TIMESTAMP COPYRIGHT_YEAR %Y )
 set( COPYRIGHT_TIMESPAN "2005, ${COPYRIGHT_YEAR}" )
 add_compile_definitions(
-  REXX_COPYRIGHT_YEAR="${COPYRIGHT_YEAR}"
-  REXX_COPYRIGHT_TIMESPAN="${COPYRIGHT_TIMESPAN}"
+  COPYRIGHT_YEAR="${COPYRIGHT_YEAR}"
+  COPYRIGHT_TIMESPAN="${COPYRIGHT_TIMESPAN}"
 )
 
 string( TIMESTAMP BUILD_DATE "%d %b %Y" )
@@ -124,19 +162,23 @@ string( TIMESTAMP BUILD_TIME "%H:%M:%S" )
 string( TIMESTAMP BUILD_TIMESTAMP %Y/%m/%d-%H:%M:%S )
 set( BUILD_SYSTEM ${CMAKE_SYSTEM} )
 add_compile_definitions(
-  REXX_BUILD_DATE="${BUILD_DATE}"
-  REXX_BUILD_SYSTEM="${BUILD_SYSTEM}"
-  REXX_BUILD_TIMESTAMP="${BUILD_TIMESTAMP}"
+  BUILD_DATE="${BUILD_DATE}"
+  BUILD_SYSTEM="${BUILD_SYSTEM}"
+  BUILD_TIMESTAMP="${BUILD_TIMESTAMP}"
 )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# setup the install paths according to the GNU standards
+# additional compiler flags
+add_compile_options( -fomit-frame-pointer )
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# setup the installation paths according to the GNU standards
 include( GNUInstallDirs )
 
 set( WELL_KNOWN_PREFIX_LIST  /usr /usr/local /opt /opt/local $ENV{HOME}/GNULayout )
 vsnap( WELL_KNOWN_PREFIX_LIST )
 if( "${CMAKE_INSTALL_PREFIX}" IN_LIST WELL_KNOWN_PREFIX_LIST )
-  set( GNUINSTALLDIRS 1 )
+  set( WELL_KNOWN_PREFIX 1 )
 endif( )
 
 include( installDirectories )
@@ -152,10 +194,8 @@ set( INST_REXXIMG "${INST_LIB_DIR}" )
 vsnap( INST_DATADIR )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-include( dirnames )
-vsnap( PLATFORM platform_dir )
-vsnap( platform platform_dir )
-
+# short source directory names
+include( dirNames )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # To ensure the required libraries are always found, regardless of whether
@@ -164,34 +204,23 @@ vsnap( platform platform_dir )
 # https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling
 
 # use (i.e. don't skip) the full RPATH for the build tree
-set (CMAKE_SKIP_BUILD_RPATH FALSE)
+set( CMAKE_SKIP_BUILD_RPATH FALSE )
 
-# when building, don't use the install RPATH already (only later when installing)
-set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+# when building, don't use the installation RPATH already (only later when installing)
+set( CMAKE_BUILD_WITH_INSTALL_RPATH FALSE )
 
-if (APPLE)
-    SET (CMAKE_INSTALL_RPATH "@executable_path/../lib")
-else ()
-    # using $ORIGIN/.. instead of ${CMAKE_INSTALL_PREFIX} allows the package
-    # to be relocated during installation, but this comes at a cost: we can't
-    # be sure that all platforms we intend to run on really support $ORIGIN
-    SET (CMAKE_INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}")
-endif ()
+if ( APPLE )
+  set( CMAKE_INSTALL_RPATH "@executable_path/../${CMAKE_INSTALL_LIBDIR}" )
+else()
+  # using $ORIGIN/.. instead of ${CMAKE_INSTALL_PREFIX} allows the package
+  # to be relocated during installation, but this comes at a cost: we can't
+  # be sure that all platforms we intend to run on really support $ORIGIN
+  set( CMAKE_INSTALL_RPATH "$ORIGIN/../${CMAKE_INSTALL_LIBDIR}" )
+endif()
 
 # add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
-set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-option( BUILD_HOSTEMU      "" TRUE )
-option( BUILD_RXREGEXP     "" TRUE )
-
-option( BUILD_RXMATH       "" FALSE )
-option( BUILD_RXSOCK       "" FALSE )
-option( BUILD_RXUNIXSYS    "" FALSE )
-
-# I do not like the old name so renamed the whole shebang
-option( BUILD_RXNCURSES    "" FALSE )
+# which point to directories outside the build tree to the installation RPATH
+set( CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 set( CMAKE_C_STANDARD 11 )
@@ -202,15 +231,15 @@ set( CMAKE_CXX_STANDARD_REQUIRED YES )
 set( CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-option( WITH_CCACHE   ""  ON )
+option( WITH_CCACHE "" ON )
 if( WITH_CCACHE )
-  unset( CCACHE_EXE )
-  unset( CCACHE_EXE CACHE )
+  unset( CCACHE )
+  unset( CCACHE CACHE )
   include( ccache )
 endif()
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-option( WITH_IPO      ""  ON )
+option( WITH_IPO "" ON )
 if( WITH_IPO )
   include( CheckIPOSupported )
   check_ipo_supported( RESULT HAVE_IPO_SUPPORT )
@@ -221,6 +250,7 @@ endif()
 
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# do not rely on the system name/family
 include( needLibCrypt )
 include( needLibDl )
 include( needLibM )
@@ -243,9 +273,10 @@ include( CheckIncludeFile )
 include( checkHeader )
 
 # we assume that the system has the ISO/IEC headers and terminate if not
+# the ISO headers will not be guarded
 include( isoHeaders )
 
-# the other headers
+# the other systems headers ( guarded )
 include( sysHeaders )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -255,6 +286,8 @@ include( checkFunction )
 
 include( sysFunctions )
 
+# direct call to avoid the double underscore in the guard macro
+check_function_exists( _NSGetEnviron HAVE_NSGETENVIRON )
 check_function_exists( _NSGetExecutablePath HAVE_NSGETEXECUTABLEPATH )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -301,7 +334,6 @@ add_compile_definitions(
   SC_LOGIN_NAME_MAX=${SC_LOGIN_NAME_MAX}
 )
 
-
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # symbols
 include( CheckSymbolExists )
@@ -333,19 +365,13 @@ include_directories(BEFORE api api/${platform_dir})
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 add_compile_definitions(
-  ORX_VER=5
-  ORX_REL=1
-  ORX_MOD=0
-  ORX_BLD=0
   SHARED_LIBRARY_PREFIX="${CMAKE_SHARED_LIBRARY_PREFIX}"
   SHARED_LIBRARY_SUFFIX="${CMAKE_SHARED_LIBRARY_SUFFIX}"
-  OOREXX_COPY_YEAR="2023"
-  ORX_SYS_STR="DARWIN"
   )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # public headers
-include( dirnames )
+include( dirNames )
 include( buildLibraries )
 
 include( ${PROJECT}_HDRS )
@@ -353,21 +379,20 @@ build_headers( ${PROJECT} )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # libraries
-include( dirnames )
+include( dirNames )
 include( buildLibraries )
 
-set( SUFF "" )
 set( LIBRARIES rexxapi rexx )
 
 foreach( X ${LIBRARIES} )
-  include( ${X}${SUFF}_SPECS )
+  include( ${X}_SPECS )
   build_objects( ${X} )
   build_shared_library( ${X} )
 endforeach()
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # executables
-include( dirnames )
+include( dirNames )
 include( buildExecutables )
 
 set( SUFF _exe )
@@ -384,9 +409,9 @@ macro( copy_image_classes origin name )
   ADD_CUSTOM_COMMAND(
     OUTPUT ${CMAKE_REXXIMG_OUTPUT_DIRECTORY}/${name}
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_SOURCE_DIR}/${origin}/${name}
-    ${CMAKE_REXXIMG_OUTPUT_DIRECTORY}/${name}
-    DEPENDS ${origin}/${name} )
+      ${CMAKE_SOURCE_DIR}/${origin}/${name}
+      ${CMAKE_REXXIMG_OUTPUT_DIRECTORY}/${name}
+      DEPENDS ${origin}/${name} )
 endmacro( copy_image_classes )
 
 copy_image_classes( ${rexx_classes_dir} CoreClasses.orx      )
@@ -420,13 +445,16 @@ macro( install_NOTICES argv )
 
 endmacro( install_NOTICES )
 
-install_NOTICES( ${CMAKE_SOURCE_DIR}/README.txt  )
+install_NOTICES( ${CMAKE_SOURCE_DIR}/README.md )
+
 install_NOTICES( ${CMAKE_SOURCE_DIR}/CPLv1.0.txt  )
 install_NOTICES( ${CMAKE_SOURCE_DIR}/BOOST_LICENSE_1.0.txt )
-install_NOTICES( ${CMAKE_SOURCE_DIR}/NOTICE-ooRexx ${CMAKE_SOURCE_DIR} )
-install_NOTICES( ${CMAKE_SOURCE_DIR}/NOTICE-this ${CMAKE_SOURCE_DIR} )
+
 install_NOTICES( ${CMAKE_SOURCE_DIR}/CHANGES-ooRexx ${CMAKE_SOURCE_DIR} )
 install_NOTICES( ${CMAKE_SOURCE_DIR}/CHANGES-this ${CMAKE_SOURCE_DIR} )
+install_NOTICES( ${CMAKE_SOURCE_DIR}/HOWTO-this ${CMAKE_SOURCE_DIR} )
+install_NOTICES( ${CMAKE_SOURCE_DIR}/NOTICE-ooRexx ${CMAKE_SOURCE_DIR} )
+install_NOTICES( ${CMAKE_SOURCE_DIR}/NOTICE-this ${CMAKE_SOURCE_DIR} )
 install_NOTICES( ${CMAKE_SOURCE_DIR}/USAGE-this ${CMAKE_SOURCE_DIR} )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -444,28 +472,9 @@ endmacro( install_X )
 # recommended
 set( CLASSES
   ${extensions_dateparser_dir}/dateparser.cls
-  ${extensions_rxregexp_dir}/rxregexp.cls )
-
-#optional
-if( 0 )
-  list( APPEND CLASSES
-    ${extensions_csvstream_dir}/csvStream.cls
-    ${extensions_json_dir}/json.cls )
-endif()
-
-if( BUILD_RXSOCK )
-  list( APPEND CLASSES
-    ${extensions_rxftp_dir}/rxftp.cls
-    ${extensions_rxsock_dir}/mime.cls
-    ${extensions_rxsock_dir}/smtp.cls
-    ${extensions_rxsock_dir}/socket.cls
-    ${extensions_rxsock_dir}/streamsocket.cls  )
-endif()
-
-if( BUILD_RXNCURSES )
-  list( APPEND CLASSES
-  ${extensions_rxncurses_dir}/ncurses.cls )
-endif()
+  ${extensions_rxregexp_dir}/rxregexp.cls
+  ${extensions_csvstream_dir}/csvStream.cls
+  ${extensions_json_dir}/json.cls )
 
 foreach( X ${CLASSES} )
   install_X( ${X} )
@@ -473,28 +482,40 @@ endforeach()
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # manpages
-macro( install_manpages page indx )
+macro( install_manpage page indx )
   install( FILES ${platform_dir}/${page}.${indx}
     DESTINATION ${INST_MAN_DIR}/man${indx}
     PERMISSIONS OWNER_READ OWNER_WRITE
                 GROUP_READ
                 WORLD_READ )
-endmacro( install_manpages )
+endmacro( install_manpage )
 
-install_manpages( rexx 1 )
-install_manpages( rexxc 1 )
-install_manpages( rxqueue 1 )
-install_manpages( rxsubcom 1 )
+install_manpage( rexx 1 )
+install_manpage( rexxc 1 )
+install_manpage( rxqueue 1 )
+install_manpage( rxsubcom 1 )
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# documentation
+if( DOCDIR )
+  macro( install_manual PDF )
+    install( FILES ${DOCDIR}/${PDF}.pdf
+      DESTINATION ${INST_DOC_DIR}
+      PERMISSIONS OWNER_READ OWNER_WRITE
+                  GROUP_READ
+                  WORLD_READ )
+  endmacro( install_manual )
+  foreach( X readme rexxapi rexxextensions rexxpg rexxref )
+    install_manual( ${X} )
+  endforeach()
+
+endif()
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # the support files
 foreach( X path.here path.append path.remove )
   install_X( ${support_dir}/bin/${X} )
 endforeach()
-
-install( DIRECTORY support
-  DESTINATION "."
-  USE_SOURCE_PERMISSIONS )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # the samples
@@ -511,8 +532,8 @@ install( DIRECTORY samples
   PATTERN "*.cls"
   PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
               GROUP_EXECUTE GROUP_READ
-              WORLD_EXECUTE WORLD_READ )
-
+              WORLD_EXECUTE WORLD_READ
+  )
 # technically samples, but nice to have in the binary dir
 foreach( X rexxtry.rex rexxcps.rex )
   install_X( ${samples_dir}/${X} )
@@ -532,7 +553,8 @@ install( DIRECTORY samples/api/c++
   PATTERN "*.cls"
   PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
               GROUP_EXECUTE GROUP_READ
-              WORLD_EXECUTE WORLD_READ )
+              WORLD_EXECUTE WORLD_READ
+  )
 
 install( DIRECTORY samples/api/classic
   DESTINATION ${INST_DATADIR}/apisamples
@@ -546,29 +568,34 @@ install( DIRECTORY samples/api/classic
   PATTERN "*.cls"
   PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
               GROUP_EXECUTE GROUP_READ
-              WORLD_EXECUTE WORLD_READ )
+              WORLD_EXECUTE WORLD_READ
+  )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # the external libraries
-include( dirnames )
+include( dirNames )
 include( buildLibraries )
 
 #
 set( EXTERNAL hostemu rxregexp )
 
-find_package( BISON )
-if( COMMAND bison_target )
-  bison_target( cmdparse
-    ${extensions_hostemu_dir}/cmdparse.ypp
-    ${CMAKE_BINARY_DIR}/cmdparse.cpp
-    COMPILE_FLAGS -l )
-else()
+option( BISON "" ON)
+if( BISON )
+  find_package( BISON )
+  if( COMMAND bison_target )
+    bison_target( cmdparse
+      ${extensions_hostemu_dir}/cmdparse.ypp
+      ${CMAKE_BINARY_DIR}/cmdparse.cpp
+      COMPILE_FLAGS -l )
+  else()
     set( BISON_cmdparse_OUTPUT_SOURCE ${extensions_hostemu_dir}/cmdparse.cpp )
+  endif()
+else()
+  set( BISON_cmdparse_OUTPUT_SOURCE ${extensions_hostemu_dir}/cmdparse.cpp )
 endif()
 
-set( SUFF "" )
 foreach( X ${EXTERNAL} )
-  include( ${X}${SUFF}_SPECS )
+  include( ${X}_SPECS )
   build_objects( ${X} )
   build_shared_library( ${X} )
 endforeach()
@@ -578,9 +605,12 @@ endforeach()
 include( configureTemplates )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-configure_template( config.h )
+configure_templates( config.h isohdrs.h )
 if( HAVE_CONFIG_H )
   add_compile_definitions( HAVE_CONFIG_H )
+endif()
+if( HAVE_ISOHDRS_H )
+  add_compile_definitions( HAVE_ISOHDRS_H )
 endif()
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -606,49 +636,35 @@ if( HAVE_OOREXX_CONFIG )
 endif()
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-configure_template( cmake_uninstall.cmake )
+configure_templates( cmake_uninstall.cmake ooRexxConfig.cmake )
 if( HAVE_CMAKE_UNINSTALL_CMAKE )
   add_custom_target( uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/cmake_uninstall.cmake )
+    COMMAND ${CMAKE_COMMAND}
+      -P ${CMAKE_BINARY_DIR}/cmake_uninstall.cmake )
 endif()
 
-vSnap( support_dir )
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+set( CPACK_PACKAGE_CHECKSUM SHA512 )
+add_custom_target( cpack
+  COMMAND export CMAKE_MANIFEST_PREFIX=CPack
+  COMMAND ${CMAKE_CPACK_COMMAND} -G TXZ
+# COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_PREFIX=portable -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
+
+  )
+
 add_custom_target( portable
 
-  COMMAND  sh  ${CMAKE_SOURCE_DIR}/${support_dir}/bin/port-create.sh
-    --fileicon ${CMAKE_SOURCE_DIR}/${support_dir}/bin/fileicon
+  COMMAND bash ${CMAKE_SOURCE_DIR}/${support_dir}/bin/portable-build.bash
     --makeself ${CMAKE_SOURCE_DIR}/${support_dir}/bin/makeself.sh
+    --project  ${PROJECT}
     --prefix   ${CMAKE_INSTALL_PREFIX}
+    --triplet  ${VERSION_TRIPLET}
+    --version  ${VERSION_STRING}
 
 # COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_PREFIX=portable -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
 
   )
 
-#dmg
-
-set( CPACK_WARN_ON_ABSOLUTE_INSTALL_DESTINATION ON )
-set( CPACK_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION ON )
-
-set( CPACK_INCLUDE_TOPLEVEL_DIRECTORY ON )
-
-set( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/CPLv1.0.txt" )
-
-if( 0 )
-set( CPACK_PACKAGE_DESCRIPTION_SUMMARY "${DESCRIPTION}" )
-set( CPACK_PACKAGE_VENDOR "RexxLA")
-set( CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/CPLv1.0.txt" )
-set( CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/CPLv1.0.txt" )
-set( CPACK_PACKAGE_NAME "${PROJECT}")
-set( CPACK_PACKAGE_VERSION "${VERSION}")
-set( CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT}_${VERSION}")
-set( CPACK_SOURCE_PACKAGE_FILE_NAME "${PROJECT}_${VERSION}" )
-set( CPACK_DMG_SLA_USE_RESOURCE_FILE_LICENSE ON )
-
-set( CPACK_BUNDLE_NAME ooRexx )
-set( CPACK_BUNDLE_PLIST "${CMAKE_SOURCE_DIR}/Info.plist" )
-set( CPACK_BUNDLE_ICON "${CMAKE_SOURCE_DIR}/platform/unix/oorexx.png" )
-
-endif()
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 include( configurationReport OPTIONAL )

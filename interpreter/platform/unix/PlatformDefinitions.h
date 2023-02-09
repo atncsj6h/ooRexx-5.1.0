@@ -86,14 +86,9 @@
 
 // "sh" should be our initial ADDRESS() environment across all Unix platforms
 #define SYSINITIALADDRESS "sh"
-#ifdef AIX
-#define SYSSHELLPATH "/usr/bin"
-#else
 #define SYSSHELLPATH "/bin"
-#endif
 
-
-#ifdef __APPLE__
+#if defined( HAVE_NSGETENVIRON ) && defined( HAVE_CRT_EXTERNS_H )
 # include <crt_externs.h>
 inline char **getEnvironment()
 {

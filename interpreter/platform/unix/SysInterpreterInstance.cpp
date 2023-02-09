@@ -125,13 +125,6 @@ SysSearchPath::SysSearchPath(const char *parentDir, const char *extensionPath)
     const char *sysPath = getenv("PATH");
     const char *rexxPath = getenv("REXX_PATH");
 
-#ifdef ORX_REXXPATH
-    if (rexxPath == NULL)
-    {
-       rexxPath = ORX_REXXPATH;
-    }
-#endif
-
     addPath(parentDir);
     // add on the current directory after the parent dir
     addPath(".");

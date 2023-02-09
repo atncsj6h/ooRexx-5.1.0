@@ -53,9 +53,13 @@
 #include <string.h>
 #include <stdio.h>
 #include <sys/types.h>
+
 #include <sys/stat.h>
+
 #include <fcntl.h>
+
 #include <unistd.h>
+
 #include <utime.h>
 #include <pwd.h>
 #include <errno.h>
@@ -197,10 +201,10 @@ void SysFileSystem::qualifyStreamName(const char *name, FileNameBuffer &fullName
  */
 bool SysFileSystem::fileExists(const char *fname)
 {
-    struct stat64 filestat;              // file attributes
+    struct stat filestat;              // file attributes
     int rc;                              // stat function return code
 
-    rc = stat64(fname, &filestat);
+    rc = stat(fname, &filestat);
     if (rc == 0)
     {
         if (S_ISREG(filestat.st_mode))
@@ -447,8 +451,8 @@ bool SysFileSystem::checkCurrentFile(const char *name, FileNameBuffer &resolvedN
     }
 
     // this needs to exists and be a regular file
-    struct stat64 dummy;
-    if (stat64(resolvedName, &dummy) == 0 &&  S_ISREG(dummy.st_mode))
+    struct stat dummy;
+    if (stat(resolvedName, &dummy) == 0 &&  S_ISREG(dummy.st_mode))
     {
         return true;
     }
@@ -512,8 +516,8 @@ bool SysFileSystem::searchPath(const char *name, const char *path, FileNameBuffe
         // a failure here means an invalid name of some sort
         if (canonicalizeName(resolvedName))
         {
-            struct stat64 dummy;
-            if (stat64(resolvedName, &dummy) == 0)   /* If file is found,     */
+            struct stat dummy;
+            if (stat(resolvedName, &dummy) == 0)   /* If file is found,     */
             {
                 // this needs to be a regular file
                 if (S_ISREG(dummy.st_mode))
@@ -801,9 +805,9 @@ int SysFileSystem::deleteDirectory(const char *name)
  */
 bool SysFileSystem::isDirectory(const char *name)
 {
-    struct stat64 finfo;                 /* return buf for the finfo   */
+    struct stat finfo;                 /* return buf for the finfo   */
 
-    int rc = stat64(name, &finfo);       /* read the info about it     */
+    int rc = stat(name, &finfo);       /* read the info about it     */
     return rc == 0 && S_ISDIR(finfo.st_mode);
 }
 
@@ -876,9 +880,9 @@ bool SysFileSystem::canWrite(const char *name)
  */
 bool SysFileSystem::isFile(const char *name)
 {
-    struct stat64 finfo;                 /* return buf for the finfo   */
+    struct stat finfo;                 /* return buf for the finfo   */
 
-    int rc = stat64(name, &finfo);       /* read the info about it     */
+    int rc = stat(name, &finfo);       /* read the info about it     */
     return rc == 0 && (S_ISREG(finfo.st_mode) || S_ISBLK(finfo.st_mode));
 }
 
@@ -892,9 +896,9 @@ bool SysFileSystem::isFile(const char *name)
  */
 bool SysFileSystem::exists(const char *name)
 {
-    struct stat64 finfo;                 /* return buf for the finfo   */
+    struct stat finfo;                 /* return buf for the finfo   */
 
-    int rc = stat64(name, &finfo);       /* read the info about it     */
+    int rc = stat(name, &finfo);       /* read the info about it     */
     return rc == 0;
 }
 
@@ -909,9 +913,9 @@ bool SysFileSystem::exists(const char *name)
  */
 bool SysFileSystem::isLink(const char *name)
 {
-    struct stat64 finfo;                   /* return buf for the finfo   */
+    struct stat finfo;                   /* return buf for the finfo   */
 
-    int rc = lstat64(name, &finfo);        /* read the info about it     */
+    int rc = lstat(name, &finfo);        /* read the info about it     */
     return rc == 0 && S_ISLNK(finfo.st_mode);
 }
 
@@ -946,7 +950,7 @@ bool utcToLocal(time_t utc, int64_t *loc)
     // a negative UTC/DST offset which extends into the prior day
     // we'll have to subtract a full day from 'offset' to compensate
     if (local.tm_year < gmt.tm_year ||
-        local.tm_year == gmt.tm_year && local.tm_yday < gmt.tm_yday)
+        (local.tm_year == gmt.tm_year && local.tm_yday < gmt.tm_yday))
     {
         offset -= 24 * 3600;
     }
@@ -954,7 +958,7 @@ bool utcToLocal(time_t utc, int64_t *loc)
     // similar to above, if we're dealing with a positive UTC/DST offset extending
     // into the next day, we'll have to add a full day to 'offset' to compensate
     if (local.tm_year > gmt.tm_year ||
-        local.tm_year == gmt.tm_year && local.tm_yday > gmt.tm_yday)
+        (local.tm_year == gmt.tm_year && local.tm_yday > gmt.tm_yday))
     {
         offset += 24 * 3600;
     }
@@ -994,8 +998,8 @@ bool localToUtc(int64_t loc, time_t *utc)
     // distinguishing those cases.  So we'll accept -1 as valid if the
     // date was either 1969-12-31 or 1970-01-01.
     return *utc != (time_t)-1 ||
-      local.tm_year == 1969 - 1900 && local.tm_mon == 12 - 1 && local.tm_mday == 31 ||
-      local.tm_year == 1970 - 1900 && local.tm_mon == 1 - 1 && local.tm_mday == 1;
+      (local.tm_year == 1969 - 1900 && local.tm_mon == 12 - 1 && local.tm_mday == 31) ||
+      (local.tm_year == 1970 - 1900 && local.tm_mon == 1 - 1 && local.tm_mday == 1);
 }
 
 
@@ -1009,10 +1013,10 @@ bool localToUtc(int64_t loc, time_t *utc)
  */
 int64_t SysFileSystem::getLastModifiedDate(const char *name)
 {
-    struct stat64 st;
+    struct stat st;
     int64_t temp;
 
-    if (stat64(name, &st) || !utcToLocal(st.st_mtime, &temp))
+    if (stat(name, &st) || !utcToLocal(st.st_mtime, &temp))
     {
         return NoTimeStamp;
     }
@@ -1039,10 +1043,10 @@ int64_t SysFileSystem::getLastModifiedDate(const char *name)
  */
 int64_t SysFileSystem::getLastAccessDate(const char *name)
 {
-    struct stat64 st;
+    struct stat st;
     int64_t temp;
 
-    if (stat64(name, &st) || !utcToLocal(st.st_atime, &temp))
+    if (stat(name, &st) || !utcToLocal(st.st_atime, &temp))
     {
         return NoTimeStamp;
     }
@@ -1068,8 +1072,8 @@ int64_t SysFileSystem::getLastAccessDate(const char *name)
  */
 uint64_t SysFileSystem::getFileLength(const char *name)
 {
-    struct stat64 st;
-    if (stat64(name, &st) != 0)
+    struct stat st;
+    if (stat(name, &st) != 0)
     {
         return 0;
     }
@@ -1129,10 +1133,10 @@ bool SysFileSystem::isHidden(const char *name)
  */
 bool SysFileSystem::setLastModifiedDate(const char *name, int64_t time)
 {
-    struct stat64 st;
+    struct stat st;
     time_t utc;
     struct timeval times[2];
-    if (stat64(name, &st) != 0)
+    if (stat(name, &st) != 0)
     {
         return false;
     }
@@ -1168,10 +1172,10 @@ bool SysFileSystem::setLastModifiedDate(const char *name, int64_t time)
  */
 bool SysFileSystem::setLastAccessDate(const char *name, int64_t time)
 {
-    struct stat64 st;
+    struct stat st;
     time_t utc;
     struct timeval times[2];
-    if (stat64(name, &st) != 0)
+    if (stat(name, &st) != 0)
     {
         return false;
     }
@@ -1207,8 +1211,8 @@ bool SysFileSystem::setLastAccessDate(const char *name, int64_t time)
  */
 bool SysFileSystem::setFileReadOnly(const char *name)
 {
-    struct stat64 buffer;
-    if (stat64(name, &buffer) != 0)
+    struct stat buffer;
+    if (stat(name, &buffer) != 0)
     {
         return false;
     }
@@ -1229,8 +1233,8 @@ bool SysFileSystem::setFileReadOnly(const char *name)
  */
 bool SysFileSystem::setFileWritable(const char *name)
 {
-    struct stat64 buffer;
-    if (stat64(name, &buffer) != 0)
+    struct stat buffer;
+    if (stat(name, &buffer) != 0)
     {
         return false;
     }
@@ -1473,22 +1477,22 @@ int copyFileDereferenceSymbolicLinks(const char *fromFile, const char *toFile, b
     }
 
     // the from file must exist
-    struct stat64 fromStat;
-    if (stat64(fromFile, &fromStat) == -1)
+    struct stat fromStat;
+    if (stat(fromFile, &fromStat) == -1)
     {
         return errno;
     }
     // and we must be abl to open it for reading
-    AutoClose fromHandle = open64(fromFile, O_RDONLY);
+    AutoClose fromHandle = open(fromFile, O_RDONLY);
     if (fromHandle == -1)
     {
         return errno;
     }
 
     // and we need to be able to
-    struct stat64 toStat;
-    bool toFileCreated = (stat64(toFile, &toStat) == -1);
-    AutoClose toHandle = open64(toFile, O_WRONLY | O_CREAT | O_TRUNC, 0666); // default access mode for the moment (like fopen)
+    struct stat toStat;
+    bool toFileCreated = (stat(toFile, &toStat) == -1);
+    AutoClose toHandle = open(toFile, O_WRONLY | O_CREAT | O_TRUNC, 0666); // default access mode for the moment (like fopen)
     if (toHandle == -1)
     {
         return errno;
@@ -1615,8 +1619,8 @@ int copyFileDontDereferenceSymbolicLinks(const char *fromFile, const char *toFil
         return EEXIST;
     }
 
-    struct stat64 fromStat;
-    if (lstat64(fromFile, &fromStat) == -1)
+    struct stat fromStat;
+    if (lstat(fromFile, &fromStat) == -1)
     {
         return errno;
     }
@@ -1625,8 +1629,8 @@ int copyFileDontDereferenceSymbolicLinks(const char *fromFile, const char *toFil
     bool fromFileIsSymbolicLink = S_ISLNK(fromStat.st_mode);
 
     // and also get the link state for the copy target.
-    struct stat64 toStat;
-    bool toFileExists = (lstat64(toFile, &toStat) == 0);
+    struct stat toStat;
+    bool toFileExists = (lstat(toFile, &toStat) == 0);
     bool toFileIsSymbolicLink = (toFileExists && S_ISLNK(toStat.st_mode));
 
     AutoFree toFileNewname;
@@ -1976,7 +1980,7 @@ void SysFileIterator::findNextEntry()
     // requesting everything? we've got what we want
     if (patternSpec == NULL)
     {
-        // we need to perform the stat64() using the fully resolved name.
+        // we need to perform the stat() using the fully resolved name.
         // if there is an allocation error here, we have limited ability to raise
         // an error here so we will just fail silently and return incorrect information.
         // There is very low probability anybody will ever see this error.
@@ -1990,7 +1994,7 @@ void SysFileIterator::findNextEntry()
         snprintf(fullName, bufferLength, "%s/%s", directory, entry->d_name);
 
         // save the attribute information for this file
-        stat64(fullName, &findFileData);
+        stat(fullName, &findFileData);
         return;
     }
 
@@ -2039,7 +2043,7 @@ void SysFileIterator::findNextEntry()
     // free the uppercase copy of the last test
     free((void *)testName);
 #endif
-    // we need to perform the stat64() using the fully resolved name.
+    // we need to perform the stat() using the fully resolved name.
     // if there is an allocation error here, we have limited ability to raise
     // an error here so we will just fail silently and return incorrect information.
     // There is very low probability anybody will ever see this error.
@@ -2053,7 +2057,7 @@ void SysFileIterator::findNextEntry()
     snprintf(fullName, bufferLength, "%s/%s", directory, entry->d_name);
 
     // save the attribute information for this file
-    stat64(fullName, &findFileData);
+    stat(fullName, &findFileData);
     return;
 }
 

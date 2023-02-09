@@ -184,11 +184,11 @@ void RexxInfo::initialize()
     char     work[20];                   // working buffer for the date
 
     // now format into a usable date and make into a string object.
-    sprintf(buffer, "%s", REXX_BUILD_DATE);
+    sprintf(buffer, "%s", BUILD_DATE);
     interpreterDate = new_string(buffer);
 
     // now build the version string
-    sprintf(buffer, "%s", REXX_VERSION);
+    sprintf(buffer, "%s", VERSION_TRIPLET );
     interpreterVersion = new_string(buffer);
 
     languageLevel = new_string(Interpreter::languageLevel);
@@ -300,7 +300,7 @@ RexxString *RexxInfo::getInterpreterName()
  */
 RexxObject *RexxInfo::getMajorVersion()
 {
-    return new_integer(ORX_VER);
+    return new_integer( VERSION );
 }
 
 
@@ -311,7 +311,7 @@ RexxObject *RexxInfo::getMajorVersion()
  */
 RexxObject *RexxInfo::getRelease()
 {
-    return new_integer(ORX_REL);
+    return new_integer( RELEASE );
 }
 
 
@@ -322,7 +322,7 @@ RexxObject *RexxInfo::getRelease()
  */
 RexxObject *RexxInfo::getModification()
 {
-    return new_integer(ORX_MOD);
+    return new_integer( MODLEVL );
 }
 
 
@@ -333,7 +333,7 @@ RexxObject *RexxInfo::getModification()
  */
 RexxObject *RexxInfo::getRevision()
 {
-    return new_integer(ORX_BLD);
+    return new_integer( BLDLEVL );
 }
 
 

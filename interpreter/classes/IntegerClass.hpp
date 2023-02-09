@@ -231,7 +231,7 @@ inline wholenumber_t length_in_bits(wholenumber_t v)
     wholenumber_t r = 0;
 
     if (v < 0) v = -v;
-#ifdef __REXX64__
+#if __SIZEOF_POINTER__ == 8
     if (v & 0xFFFFFFFF00000000) { v >>= 32; r |= 32; }
 #endif
     if (v &         0xFFFF0000) { v >>= 16; r |= 16; }
@@ -243,7 +243,7 @@ inline wholenumber_t length_in_bits(wholenumber_t v)
 }
 
 // ignoring bases or powers < 3, this is the maximum base/power a RexxInteger can handle
-#ifdef __REXX64__
+#if __SIZEOF_POINTER__ == 8
     // 999999 ** 3 = 999997000002999999
     #define RexxIntegerMaxBase  999999
     // 3 ** 37 = 450283905890997363

@@ -35,7 +35,8 @@
 *
 * the binaries can be installed using the system package manager
 *
-* cmake ( 3.24 should work )
+* cmake ( 3.25 )
+* using the return( PROPAGATE ... ... ... )construct
 * binaries ( Drag and Drop Installer ) for Darwin
 * sources
 * `https://cmake.org/download/`
@@ -44,6 +45,16 @@
 * binaries ( system packages )
 * sources/current binaries
 * `https://releases.llvm.org/download.html`
+*
+* bison
+* binaries ( system packages )
+* sources
+* `https://ftp.gnu.org/gnu/bison`
+* * *
+
+##  NICE TO HAVE ( system )
+*
+* to rebuild extensions/hostemu/cmdparse.ypp
 *
 * bison
 * binaries ( system packages )

@@ -499,12 +499,12 @@ set (build_extensions_rxsock_dir ${build_extensions_dir}/rxsock)
 set (build_extensions_orxncurses_dir ${build_extensions_dir}/orxncurses)
 set (build_extensions_hostemu_dir ${build_extensions_dir}/hostemu)
 set (build_extensions_hostemu_platform_dir ${build_extensions_hostemu_dir}/${ORX_PLATFORM_DIR})
-set (build_utilities_dir utilities)
-set (build_utilities_rexx_dir ${build_utilities_dir}/rexx/${ORX_PLATFORM_DIR})
-set (build_utilities_rexxc_dir ${build_utilities_dir}/rexxc/${ORX_PLATFORM_DIR})
-set (build_utilities_rexximage_dir ${build_utilities_dir}/rexximage)
-set (build_utilities_rxqueue_dir ${build_utilities_dir}/rxqueue/${ORX_PLATFORM_DIR})
-set (build_utilities_rxsubcom_dir ${build_utilities_dir}/rxsubcom/${ORX_PLATFORM_DIR})
+set (build_executables_dir executables)
+set (build_executables_rexx_dir ${build_executables_dir}/rexx/${ORX_PLATFORM_DIR})
+set (build_executables_rexxc_dir ${build_executables_dir}/rexxc/${ORX_PLATFORM_DIR})
+set (build_executables_rexximage_dir ${build_executables_dir}/rexximage)
+set (build_executables_rxqueue_dir ${build_executables_dir}/rxqueue/${ORX_PLATFORM_DIR})
+set (build_executables_rxsubcom_dir ${build_executables_dir}/rxsubcom/${ORX_PLATFORM_DIR})
 set (build_api_dir api)
 set (build_api_platform_dir api/${ORX_PLATFORM_DIR})
 set (build_samples_dir samples)
@@ -522,8 +522,8 @@ endif ()
 set (build_extensions_ole_dir ${build_extensions_dir}/platform/windows/ole)
 set (build_extensions_oodialog_dir ${build_extensions_dir}/platform/windows/oodialog)
 set (build_extensions_rxwinsys_dir ${build_extensions_dir}/platform/windows/rxwinsys)
-set (build_utilities_rexxpaws_dir ${build_utilities_dir}/platform/windows/rexxpaws)
-set (build_utilities_rexxhide_dir ${build_utilities_dir}/platform/windows/rexxhide)
+set (build_executables_rexxpaws_dir ${build_executables_dir}/platform/windows/rexxpaws)
+set (build_executables_rexxhide_dir ${build_executables_dir}/platform/windows/rexxhide)
 
 if (WIN32)
 # change exception handling flag for [bugs:#1728] Hang condition
@@ -933,7 +933,7 @@ else ()
 endif ()
 # Sources for rexx.  Note, the target must not be rexx, since we already
 # have a rexx library target
-add_executable(rexx_exe ${build_utilities_rexx_dir}/rexx.cpp
+add_executable(rexx_exe ${build_executables_rexx_dir}/rexx.cpp
                         ${platform_rexx_exe_sources})
 # This allows the executable to have the same name as the library.
 SET_TARGET_PROPERTIES(rexx_exe
@@ -980,7 +980,7 @@ if (WIN32)
             ${build_platform_dir}/verinfo.rc)
 endif ()
 # Sources for rexximg
-add_executable(rexximage ${build_utilities_rexximage_dir}/rexximage.cpp
+add_executable(rexximage ${build_executables_rexximage_dir}/rexximage.cpp
             ${core_classes}
             ${platform_rexximage_sources})
 # Include file definition
@@ -1171,7 +1171,7 @@ else ()
    set (platform_rexxc_libs ${ORX_SYSLIB_DL} ${ORX_SYSLIB_PTHREAD})
 endif ()
 # Sources for rexxc
-add_executable(rexxc ${build_utilities_rexxc_dir}/RexxCompiler.cpp
+add_executable(rexxc ${build_executables_rexxc_dir}/RexxCompiler.cpp
                      ${platform_rexxc_sources})
 # Include file definition
 target_include_directories(rexxc PUBLIC
@@ -1192,7 +1192,7 @@ else ()
    set (platform_rxqueue_libs ${ORX_SYSLIB_DL} ${ORX_SYSLIB_PTHREAD})
 endif ()
 # Sources for rxqueue
-add_executable(rxqueue ${build_utilities_rxqueue_dir}/rxqueue.cpp
+add_executable(rxqueue ${build_executables_rxqueue_dir}/rxqueue.cpp
                      ${platform_rxqueue_sources})
 # Include file definition
 target_include_directories(rxqueue PUBLIC
@@ -1214,7 +1214,7 @@ else ()
    set (platform_subcom_libs ${ORX_SYSLIB_DL} ${ORX_SYSLIB_PTHREAD})
 endif ()
 # Sources for rxsubcom
-add_executable(rxsubcom ${build_utilities_rxsubcom_dir}/rxsubcom.cpp
+add_executable(rxsubcom ${build_executables_rxsubcom_dir}/rxsubcom.cpp
                      ${platform_subcom_sources})
 # Include file definition
 target_include_directories(rxsubcom PUBLIC
@@ -1612,7 +1612,7 @@ endif ()
 #################### rexxhide (executable) ##########################
 if (WIN32)
    # Sources for rexxhide.
-   add_executable(rexxhide WIN32 ${build_utilities_rexxhide_dir}/rexxhide.cpp
+   add_executable(rexxhide WIN32 ${build_executables_rexxhide_dir}/rexxhide.cpp
                            ${build_platform_dir}/verinfo.rc)
    # Include file definition
    target_include_directories(rexxhide PUBLIC
@@ -1632,7 +1632,7 @@ endif ()
 #################### rexxpaws (executable) ##########################
 if (WIN32)
    # Sources for rexxpaws.
-   add_executable(rexxpaws ${build_utilities_rexxpaws_dir}/rexxpaws.cpp
+   add_executable(rexxpaws ${build_executables_rexxpaws_dir}/rexxpaws.cpp
                            ${build_platform_dir}/verinfo.rc)
    # Include file definition
    target_include_directories(rexxhide PUBLIC

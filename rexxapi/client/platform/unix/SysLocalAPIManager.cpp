@@ -45,16 +45,15 @@
 #include "SysCSStream.hpp"
 #include <stdlib.h>
 #include <stdio.h>
+
 #include <unistd.h>
+
 #include <signal.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include "SysProcess.hpp"
 
-#ifdef AIX
-extern "C"
-{
-#endif
+#include <sys/stat.h>
+
+#include "SysProcess.hpp"
 
 int _rexxapi_fini()__attribute__((destructor));
 
@@ -64,10 +63,6 @@ int _rexxapi_fini()
     LocalAPIManager::shutdownInstance();
     return 0;
 }
-
-#ifdef AIX
-}
-#endif
 
 /**
  * Start the rxapi daemon process.

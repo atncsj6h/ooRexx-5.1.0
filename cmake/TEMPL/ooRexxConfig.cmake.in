@@ -1,0 +1,84 @@
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#
+
+set( ${@PROJECT@}_EXENAME rexx )
+
+find_program( ${@PROJECT@}_EXECUTABLE ${@PROJECT@}_EXENAME )
+if( REXX_EXECUTABLE )
+    message( "++ REXX_EXECUTABLE ${REXX_EXECUTABLE} " )
+    get_filename_component(OOREXX_INSTALL_PREFIX "${REXX_EXECUTABLE}" DIRECTORY )
+    get_filename_component(OOREXX_INSTALL_PREFIX "${OOREXX_INSTALL_PREFIX}" DIRECTORY )
+    message( "++ OOREXX_INSTALL_PREFIX ${OOREXX_INSTALL_PREFIX} " )
+endif()
+
+if( NOT OOREXX_INSTALL_PREFIX
+    AND NOT DEFINED ENV{OOREXX_INSTALL_PREFIX}
+    AND NOT DEFINED ENV{REXX_HOME} )
+    message( FATAL_ERROR "
+ You must provide the ooRexx install prefix,
+ use -DOOREXX_INSTALL_PREFIX=<.........> " )
+endif()
+
+
+set( @PROJECT@_FOUND           1 )
+
+set( @PROJECT@_VERSION          @VERSION_TRIPLET@ )
+set( @PROJECT@_VERSION_STRING   @VERSION_STRING@ )
+set( @PROJECT@_DESCRIPTION      @DESCRIPTION@ )
+
+set( @PROJECT@_PROVIDES         @PROVIDES@ )
+
+set( @PROJECT@_EXENAME          @EXENAME@ )
+set( @PROJECT@_PREFIX           @INST_PREFIX@ )
+set( @PROJECT@_BINDIR           @INST_BIN_DIR@ )
+set( @PROJECT@_INCDIR           @INST_INC_DIR@ )
+set( @PROJECT@_LIBDIR           @INST_LIB_DIR@ )
+
+set( @PROJECT@_MODULE_NAME      @ooRexx@ )
+
+set( @PROJECT@_CFLAGS           "-I@INST_PREFIX@/@INST_INC_DIR@"
+set( @PROJECT@_CFLAGS_I         "" )
+set( @PROJECT@_CFLAGS_OTHER     "" )
+set( @PROJECT@_INCLUDEDIR       "@INST_PREFIX@/@INST_INC_DIR@" )
+
+set( @PROJECT@_LDFLAGS          "-L@INST_PREFIX@/@INST_LIB_DIR@")
+set( LLIBS "")
+foreach( library  ${@PROJECT@_PROVIDES} )
+  set( @PROJECT@_LDFLAGS "${@PROJECT@_LDFLAGS};-l${LLIB}" )
+endforeach()
+
+set( @PROJECT@_LDFLAGS_OTHER    "" )
+
+set( @PROJECT@_LIBDIR           "@INST_PREFIX@/@INST_LIB_DIR@" )
+set( @PROJECT@_LIBRARIES        "@PROJECT@_PROVIDES" )
+set( @PROJECT@_LIBS_L           "" )
+set( @PROJECT@_LIBS_OTHER       "" )
+set( @PROJECT@_LIBS_PATHS       "" )
+
+
+[[ ooRexx_CFLAGS_I=''
+[[ ooRexx_CFLAGS_OTHER=''
+[[ ooRexx_CFLAGS='-I/opt/ooRexx/include'
+[[ ooRexx_FOUND='1'
+[[ ooRexx_INCLUDEDIR='/opt/ooRexx/include'
+[[ ooRexx_LDFLAGS_OTHER=''
+[[ ooRexx_LDFLAGS='-L/opt/ooRexx/lib;-lrexx;-lrexxapi'
+[[ ooRexx_LIBDIR='/opt/ooRexx/lib'
+[[ ooRexx_LIBRARIES='rexx;rexxapi'
+[[ ooRexx_LIBS_L=''
+[[ ooRexx_LIBS_OTHER=''
+[[ ooRexx_LIBS_PATHS=''
+[[ ooRexx_LINK_LIBRARIES='/opt/ooRexx/lib/librexx.dylib;/opt/ooRexx/lib/librexxapi.dylib'
+[[ ooRexx_MODULE_NAME='ooRexx'
+
+[[ ooRexx_STATIC_CFLAGS_I=''
+[[ ooRexx_STATIC_CFLAGS_OTHER=''
+[[ ooRexx_STATIC_CFLAGS='-I/opt/ooRexx/include'
+[[ ooRexx_STATIC_LDFLAGS_OTHER=''
+[[ ooRexx_STATIC_LDFLAGS='-L/opt/ooRexx/lib;-lrexx;-lrexxapi'
+[[ ooRexx_STATIC_LIBDIR=''
+[[ ooRexx_STATIC_LIBRARIES='rexx;rexxapi'
+[[ ooRexx_STATIC_LIBS_L=''
+[[ ooRexx_STATIC_LIBS_OTHER=''
+[[ ooRexx_STATIC_LIBS_PATHS=''
+[[ ooRexx_VERSION='5'

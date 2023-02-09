@@ -98,7 +98,7 @@ public:
     // default size for the live stack (in entries). We make the initial one
     // much larger if building for 64-bit mode because there is a much higher
     // possibility of getting large complex collections
-#ifdef __REXX64__
+#if __SIZEOF_POINTER__ == 8
     static const size_t LiveStackSize = 256 * 1024;
 #else
     static const size_t LiveStackSize = 64 * 1024;

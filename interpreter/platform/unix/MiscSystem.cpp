@@ -60,7 +60,9 @@
 #include "PointerClass.hpp"
 #include "SystemInterpreter.hpp"
 #include <stdlib.h>
+
 #include <unistd.h>
+
 #include <errno.h>
 
 #if defined( HAVE_SIGNAL_H )
@@ -114,6 +116,6 @@ void SystemInterpreter::validateAddressName(RexxString *name )
  */
 const char *SystemInterpreter::getPlatformName()
 {
-    return ORX_SYS_STR;
+    return SYSTEM_NAME_UC;
 }
 

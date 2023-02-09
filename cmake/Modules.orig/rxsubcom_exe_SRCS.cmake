@@ -3,12 +3,12 @@
 include_guard( GLOBAL )
 
 set( rxsubcom_exe_SRCS
-  ${utilities_rxsubcom_dir}/rxsubcom.cpp
+  ${executables_rxsubcom_dir}/rxsubcom.cpp
 )
 
 # Include file definition
 set( rxsubcom_exe_include_DIRS
-  ${lib_dir}
+  ${internals_dir}
   ${api_dir}
   ${api_platform_dir}
   ${interpreter_platform_dir}

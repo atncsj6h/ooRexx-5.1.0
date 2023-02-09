@@ -8,11 +8,9 @@ set( rxregexp_SRCS
   ${extensions_rxregexp_dir}/dblqueue.cpp
   ${extensions_rxregexp_dir}/rxregexp.cpp )
 
-# files required by specific platforms
-
 # Include file definition
 set( rxregexp_include_DIRS
-  ${internal_dir}
+  ${internals_dir}
   ${api_dir}
   ${api_platform_dir}
   ${messages_dir}

@@ -3,12 +3,12 @@
 include_guard( GLOBAL )
 
 set( rxqueue_exe_SRCS
-  ${utilities_rxqueue_dir}/rxqueue.cpp
+  ${executables_rxqueue_dir}/rxqueue.cpp
 )
 
 # Include file definition
 set( rxqueue_exe_include_DIRS
-  ${lib_dir}
+  ${internals_dir}
   ${api_dir}
   ${api_platform_dir}
   ${interpreter_platform_dir}

@@ -248,29 +248,24 @@ RexxReturnCode REXXENTRY RexxTranslateInstoreProgram(const char *inFile, CONSTRX
 char *REXXENTRY RexxGetVersionInformation()
 {
     char ver[100];
-    if ( REXX_VERSION_REVISION == 0 )
-      sprintf( ver, " %s", REXX_VERSION);
+    if ( BLDLEVL == 0 )
+      sprintf( ver, " %s", VERSION_TRIPLET );
     else
-      sprintf( ver, " %s r%d", REXX_VERSION, REXX_VERSION_REVISION );
-
+      sprintf( ver, " %s r%d", VERSION_TRIPLET, BLDLEVL );
     char header[] = "Open Object Rexx Version";
-  #ifdef _DEBUG
-    char build[] = " - Internal Test Version\nBuild date: ";
-  #else
-    char build[] = "\nBuild date: ";
-  #endif
-    char mode[] = "\nAddressing mode: " REXX_ARCHITECTURE  ;
-
+    char build[]  = "\nBuild date: ";
+    char mode[100] ;
+    sprintf( mode, "\nAddressing mode: %d", ( __SIZEOF_POINTER__ * 8 ) )  ;
     char copy1[] = "\nCopyright (c) 1995, 2004 IBM Corporation. All rights reserved.";
-    char copy2[] = "\nCopyright (c) " REXX_COPYRIGHT_TIMESPAN " Rexx Language Association. All rights reserved.";
+    char copy2[] = "\nCopyright (c) " COPYRIGHT_TIMESPAN " Rexx Language Association. All rights reserved.";
     char copy3[] = "\nThis program and the accompanying materials are made available under the terms";
     char copy4[] = "\nof the Common Public License v1.0 which accompanies this distribution or at";
     char copy5[] = "\nhttps://www.oorexx.org/license.html";
-    char *ptr = (char *)SystemInterpreter::allocateResultMemory(strlen(header) + strlen(ver) + strlen(build) + strlen(REXX_BUILD_DATE) +
-        strlen(mode) + strlen(copy1) + strlen(copy2) + strlen(copy3) + strlen(copy4) + strlen(copy5) + 1);
+    char *ptr = (char *)SystemInterpreter::allocateResultMemory(strlen(header) + strlen(ver) + strlen(build) + strlen(BUILD_DATE) +
+        strlen(mode) + 2 + strlen(copy1) + strlen(copy2) + strlen(copy3) + strlen(copy4) + strlen(copy5) + 1);
     if (ptr != NULL)
     {
-        sprintf(ptr, "%s%s%s%s%s%s%s%s%s%s", header, ver, build, REXX_BUILD_DATE , mode, copy1, copy2, copy3, copy4, copy5);
+        sprintf(ptr, "%s%s%s%s%s%s%s%s%s%s", header, ver, build, BUILD_DATE , mode, copy1, copy2, copy3, copy4, copy5);
     }
     return ptr;
 }

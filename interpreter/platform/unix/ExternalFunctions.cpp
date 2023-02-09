@@ -58,7 +58,9 @@
 #include <stdio.h>                          /* Get printf, FILE type, etc.    */
 #include <string.h>                         /* Get strcpy, strcat, etc.       */
 #include <ctype.h>                          /* Get toupper                    */
-#include <unistd.h>                         /* get getcwd routine/environ     */
+
+#include <unistd.h>
+
 #include <limits.h>                         /* Get PATH_MAX                   */
 #include <sys/ioctl.h>
 #include <fcntl.h>

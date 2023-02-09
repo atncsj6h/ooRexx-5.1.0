@@ -46,7 +46,7 @@ set( rexxapi_include_DIRS
   ${rexxapi_common_platform_dir}
   ${common_dir}
   ${common_platform_dir}
-  ${lib_dir}
+  ${internals_dir}
 )
 
 # link library definitions

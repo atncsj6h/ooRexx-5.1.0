@@ -121,9 +121,9 @@ string( TIMESTAMP BUILD_TIME "%H:%M:%S" )
 string( TIMESTAMP BUILD_TIMESTAMP %Y/%m/%d-%H:%M:%S )
 set( BUILD_SYSTEM ${CMAKE_SYSTEM} )
 add_compile_definitions(
-  REXX_BUILD_DATE="${BUILD_DATE}"
-  REXX_BUILD_SYSTEM="${BUILD_SYSTEM}"
-  REXX_BUILD_TIMESTAMP="${BUILD_TIMESTAMP}"
+  BUILD_DATE="${BUILD_DATE}"
+  BUILD_SYSTEM="${BUILD_SYSTEM}"
+  BUILD_TIMESTAMP="${BUILD_TIMESTAMP}"
 )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

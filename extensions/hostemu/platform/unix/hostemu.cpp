@@ -43,7 +43,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <sys/types.h>
+
 #include <unistd.h>
+
 #include <pthread.h>
 #include <rexx.h>
 #include <oorexxapi.h>
@@ -596,7 +598,7 @@ static unsigned long ExecIO_Read_To_Stem (
       return ERR_EXECIO_NO_STORAGE; // Insufficient free storage to load EXECIO
       }
 
-   // skip until we reach line number 'StartRcd' 
+   // skip until we reach line number 'StartRcd'
    for (i = 1; i < ExecIO_Options.lStartRcd; i++)
    {
      char* ignore; // avoid warning: ignoring return value of 'char* fgets(char*, int, FILE*)'
@@ -679,7 +681,7 @@ static unsigned long ExecIO_Read_To_Queue (
 
    /* process request */
 
-   // skip until we reach line number 'StartRcd' 
+   // skip until we reach line number 'StartRcd'
    for (i = 1; i < ExecIO_Options.lStartRcd; i++)
    {
      char* ignore; // avoid warning: ignoring return value of 'char* fgets(char*, int, FILE*)'

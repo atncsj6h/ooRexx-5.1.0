@@ -40,11 +40,6 @@
 #include "SystemInterpreter.hpp"
 
 
-#ifdef AIX
-extern "C"
-{
-#endif
-
 int _rexx_init() __attribute__((constructor));
 int _rexx_fini() __attribute__((destructor));
 
@@ -63,7 +58,3 @@ int _rexx_fini()
     return 0;
 }
 
-
-#ifdef AIX
-}
-#endif

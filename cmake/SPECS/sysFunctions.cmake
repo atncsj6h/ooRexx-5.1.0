@@ -33,6 +33,8 @@ check_function (
   removexattr
   setlocale
   setxattr
+  setpgid
+  setpgrp
   sighold
   sigprocmask
   strdup

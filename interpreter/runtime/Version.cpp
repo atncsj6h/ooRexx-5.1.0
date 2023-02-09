@@ -63,8 +63,8 @@ RexxString *Interpreter::getVersionString()
     {
         char     buffer[100];                /* buffer for building the string    */
 
-        sprintf(buffer, "REXX-ooRexx_%s(MT)_%s-bit %s %s", REXX_VERSION, REXX_ARCHITECTURE,
-    			languageLevel, REXX_BUILD_DATE);
+        sprintf(buffer, "REXX-ooRexx_%s(MT)_%d-bit %s %s", VERSION_TRIPLET, ( __SIZEOF_POINTER__ * 8 ),
+    			languageLevel, BUILD_DATE);
           versionNumber = new_string(buffer);  /* return as a rexx string           */
     }
     return versionNumber;

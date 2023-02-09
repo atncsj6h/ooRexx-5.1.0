@@ -46,6 +46,7 @@
 #define SysProcess_DEFINED
 
 #include <sys/types.h>
+
 #include <unistd.h>
 
 enum

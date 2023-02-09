@@ -48,10 +48,14 @@
 #include <string.h>
 #include <stdio.h>
 #include <sys/types.h>
+
 #include <sys/stat.h>
+
 #include <sys/utsname.h>
 #include <signal.h>
+
 #include <unistd.h>
+
 #include <pwd.h>
 #include <grp.h>
 #include <time.h>
@@ -76,9 +80,7 @@
 /* Definitions                                                                */
 /*----------------------------------------------------------------------------*/
 
-#if defined(__APPLE__)
-# define stat64 stat
-
+#if defined( DARWIN )
 // on DARWIN the xattr functions have additional arguments
 // ssize_t getxattr(const char *path, const char *name, void *value, size_t size, u_int32_t position, int options);
 // int setxattr(const char *path, const char *name, const void *value, size_t size, u_int32_t position, int options);
@@ -93,10 +95,6 @@
 #define SetXattr setxattr
 #define RemoveXattr removexattr
 #define ListXattr listxattr
-#endif
-
-#if defined(OPSYS_NETBSD) || defined(OPSYS_FREEBSD) || defined(OPSYS_OPENBSD)
-#define stat64 stat
 #endif
 
 #if !defined(HOST_NAME_MAX) && defined(_POSIX_HOST_NAME_MAX)

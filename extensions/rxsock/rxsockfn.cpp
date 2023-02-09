@@ -71,6 +71,7 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+
 #include <unistd.h>
 
 #if defined( HAVE_SYS_SELECT_H )
@@ -369,7 +370,7 @@ RexxRoutine0(RexxStringObject, SockGetHostId)
     for(struct ifaddrs* tia = tifaddrs; tia->ifa_next != NULL; tia = tia->ifa_next) {
       if (tia->ifa_addr != NULL && tia->ifa_addr->sa_family == AF_INET) {
         struct sockaddr_in* si = (struct sockaddr_in*)tia->ifa_addr;
-        if(memcmp("127", inet_ntoa(si->sin_addr), 3)) { /* filter out loopbacks */  
+        if(memcmp("127", inet_ntoa(si->sin_addr), 3)) { /* filter out loopbacks */
           ia.s_addr = si->sin_addr.s_addr;
           break;
         }

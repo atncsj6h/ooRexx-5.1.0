@@ -113,17 +113,21 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 #include <unistd.h>
+
 #include <limits.h>
 #include <math.h>
 #include <limits.h>
-#include <sys/stat.h>                  /* mkdir() function           */
-#include <errno.h>                     /* get the errno variable     */
+
+#include <sys/stat.h>
+
+#include <errno.h>
 #include <stddef.h>
 #include <sys/types.h>
-#if !defined(AIX)
+
 #include <sys/syscall.h>
-#endif
+
 #include <sys/utsname.h>
 #include <sys/ipc.h>
 #include <pthread.h>
@@ -181,13 +185,6 @@
 #include "RexxUtilCommon.hpp"
 #include "Utilities.hpp"
 #include "RexxInternalApis.h"
-
-#if defined __APPLE__
-#define open64 open
-// avoid warning: '(l)stat64' is deprecated: first deprecated in macOS 10.6
-#define stat64 stat
-#define lstat64 lstat
-#endif
 
 #define REXXMESSAGEFILE    "rexx.cat"
 
@@ -400,12 +397,7 @@ void formatFileAttributes(TreeFinder *finder, FileNameBuffer &foundFileLine, Sys
 {
     char fileAttr[256];                 // File attribute string of found file
 
-#ifdef AIX
-    struct tm stTimestamp;
-    struct tm *timestamp = localtime_r(&(attributes.findFileData.st_mtime), &stTimestamp);
-#else
     struct tm *timestamp = localtime(&(attributes.findFileData.st_mtime));
-#endif
 
     // tm_year is relative to 1900, with full year coverage of 0001 through 9999
     if (finder->longTime())
@@ -1382,7 +1374,7 @@ RexxRoutine1(RexxStringObject, SysCreatePipe, OPTIONAL_CSTRING, blocking)
 
 RexxRoutine2(RexxObjectPtr, SysGetFileDateTime, CSTRING, file, OPTIONAL_CSTRING, timesel)
 {
-    struct    stat64 buf;
+    struct    stat buf;
     struct    tm *newtime;
 
     RoutineQualifiedName qualifiedName(context, file);
@@ -1394,7 +1386,7 @@ RexxRoutine2(RexxObjectPtr, SysGetFileDateTime, CSTRING, file, OPTIONAL_CSTRING,
         invalidOptionException(context, "SysGetFileDateTime", "time selector", "'A' or 'W'", timesel);
     }
 
-    if (stat64(qualifiedName, &buf) < 0)
+    if (stat(qualifiedName, &buf) < 0)
     {
         return context->WholeNumber(-1);
     }
@@ -1441,11 +1433,11 @@ RexxRoutine3(int, SysSetFileDateTime, CSTRING, filename, OPTIONAL_CSTRING, newda
     struct utimbuf timebuf;
     struct tm *newtime;
     time_t ltime;
-    struct stat64 buf;
+    struct stat buf;
 
     RoutineQualifiedName qualifiedName(context, filename);
 
-    if (stat64(qualifiedName, &buf) < 0)
+    if (stat(qualifiedName, &buf) < 0)
     {
         return -1;
     }

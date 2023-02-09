@@ -297,7 +297,7 @@ set( rexx_SRCS
 
 # Include file definition
 set( rexx_include_DIRS
-  ${lib_dir}
+  ${internals_dir}
   ${api_dir}
   ${api_platform_dir}
   ${common_dir}

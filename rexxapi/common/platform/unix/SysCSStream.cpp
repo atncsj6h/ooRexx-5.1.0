@@ -43,9 +43,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 #include <unistd.h>
+
 #include <sys/types.h>
+
 #include <sys/stat.h>
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -496,11 +500,8 @@ void SysServerLocalSocketConnectionManager::getServiceLocation(char *path, size_
         name = pw->pw_name;
     }
 
-    snprintf(path, len, "%s/.ooRexx-%d.%d.%d-%s-%s", homePath, ORX_VER, ORX_REL, ORX_MOD,
-    #ifdef __REXX64__
-            "64",
-    #else
-            "32",
-    #endif
-            name);
+    snprintf(path, len, "%s/.ooRexx-%s-%d-%s", homePath,
+        VERSION_TRIPLET,
+        ( __SIZEOF_POINTER__ * 8 ),
+        name);
 }

@@ -1238,7 +1238,7 @@ BUILTIN(DATE)
 
         case 'F':
             // if possible, return RexxInteger instead of String
-#ifdef __REXX64__
+#if __SIZEOF_POINTER__ == 8
             return new_integer(timestamp.getBaseTime());
 #else
             timestamp.formatBaseTime(work);
@@ -1247,7 +1247,7 @@ BUILTIN(DATE)
 
         case 'T':
             // if possible, return RexxInteger instead of String
-#ifdef __REXX64__
+#if __SIZEOF_POINTER__ == 8
             return new_integer(timestamp.getUnixTime());
 #else
             timestamp.formatUnixTime(work);
@@ -1511,7 +1511,7 @@ BUILTIN(TIME)
 
         case 'F':                          // 'F'ull
             // if possible, return RexxInteger instead of String
-#ifdef __REXX64__
+#if __SIZEOF_POINTER__ == 8
             return new_integer(timestamp.getBaseTime());
 #else
             timestamp.formatBaseTime(work);
@@ -1520,7 +1520,7 @@ BUILTIN(TIME)
 
         case 'T':                          // 'T'icks
             // if possible, return RexxInteger instead of String
-#ifdef __REXX64__
+#if __SIZEOF_POINTER__ == 8
             return new_integer(timestamp.getUnixTime());
 #else
             timestamp.formatUnixTime(work);
@@ -1529,7 +1529,7 @@ BUILTIN(TIME)
 
         case 'O':                          // 'O'ffset.  microseconds offset from UTC
             // if possible, return RexxInteger instead of String
-#ifdef __REXX64__
+#if __SIZEOF_POINTER__ == 8
             return new_integer(timestamp.timeZoneOffset);
 #else
             timestamp.formatTimeZone(work);
@@ -2422,7 +2422,7 @@ BUILTIN(CHARS)
 BUILTIN(STREAM)
 {
     const size_t STREAM_Min = 1;
-    #undef STREAM_Max                      /* already defined in AIX            */
+    #undef STREAM_Max
     const size_t STREAM_Max = 3;
     const size_t STREAM_name =      1;
     const size_t STREAM_operation = 2;

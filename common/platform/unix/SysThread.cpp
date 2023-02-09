@@ -48,7 +48,9 @@
 
 #include "SysThread.hpp"
 #include <stdio.h>
+
 #include <unistd.h>
+
 #include <errno.h>
 
 // attach an activity to an existing thread

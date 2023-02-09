@@ -56,6 +56,8 @@
 #include <stdio.h>
 #include <dlfcn.h>
 
+#include <libgen.h>
+
 #include "SysLibrary.hpp"
 #include "SysProcess.hpp"
 
@@ -85,95 +87,106 @@ bool SysLibrary::load(
 /* Function:  Load a named library, returning success/failure flag            */
 /******************************************************************************/
 {
-    char nameBuffer[PC_PATH_MAX];
+
+    const char* TRACE = getenv( "SYSLIBRARY_DEBUG" ) ;
+
+    #if 0
+    char rentBuffer[PC_PATH_MAX+PC_NAME_MAX];
+    char pathBuffer[PC_PATH_MAX+PC_NAME_MAX];
+    char  resBuffer[PC_PATH_MAX+PC_NAME_MAX];
+    #endif
+
+    char nameBuffer[PC_PATH_MAX+PC_NAME_MAX];
 
     if (strlen(name) > PC_NAME_MAX-16)
     {
         return false;
     }
 
-    #if defined( PRIVATE )
 
-    // try an ASIS load
-    printf("SysLibrary.cpp trying an ASIS load >>%s<<\n", name );
-    libraryHandle = dlopen(name, RTLD_LAZY);
-    if (libraryHandle)
+    if ( TRACE )
     {
-        return true;
+        printf("SysLibrary.cpp passed name =>'%s'\n", name );
+
+        printf("SysLibrary.cpp compare name to rexxapi RC(%d)\n",
+            strcmp( name, "rexxapi") ) ;
+        printf("SysLibrary.cpp compare name to rexx    RC(%d)\n",
+            strcmp( name, "rexx") ) ;
+        //  if ( strcmp( name, "rexxapi") && strcmp( name, "rexx") )
+        //    printf("SysLibrary.cpp will try to load the user library '%s'\n", name );
     }
 
-    // try an RPATH load
-    printf("SysLibrary.cpp trying a RPATH load >>%s<<\n", name );
-    char *res = realpath( name, nameBuffer ) ;
-    printf("SysLibrary.cpp  res(uncond) >%s<\n", res ) ;
-    printf("SysLibrary.cpp  buf(uncond) >%s<\n", nameBuffer );
-
-
-    libraryHandle = dlopen(nameBuffer, RTLD_LAZY);
-    if (libraryHandle)
-    {
-        return true;
-    }
 
     #if 0
-    char *res = realpath( name, nameBuffer );
-      printf("SysLibrary.cpp  res(uncond) >%s<\n", res ) ;
-      printf("SysLibrary.cpp  buf(uncond) >%s<\n", nameBuffer );
-    if ( res )
+    if  ( strchr(name,'/') || strchr(name,'.') )
     {
-      printf("SysLibrary.cpp  res not NULL\n");
-      printf("SysLibrary.cpp  res         >%s<\n", res ) ;
-      printf("SysLibrary.cpp  nameBuffer  >%s<\n", nameBuffer );
-    }
-    else
-    {
-      printf("SysLibrary.cpp  res NULLNULL\n");
-      printf("SysLibrary.cpp  res         >%s<\n", res ) ;
-      printf("SysLibrary.cpp  nameBuffer  >%s<\n", nameBuffer );
+        char rentBuffer[PC_PATH_MAX];
+        char pathBuffer[PC_PATH_MAX];
 
-      char* errStr = strerror(errno);
-      printf("SysLibrary.cpp  error string>%s<\n" , errStr);
+
+        printf("SysLibrary.cpp trying a directed load for '%s' \n", name ) ;
+
+        printf("SysLibrary.cpp dirname_r  >>>%s<<<\n", dirname_r(name, rentBuffer));
+
+        printf("SysLibrary.cpp basename_r >>>%s<<<\n", basename_r(name, rentBuffer ) );
+
+        printf("SysLibrary.cpp resBuffer  >>>%s<<<\n", realpath(name, pathBuffer) );
+        printf("SysLibrary.cpp pathBuffer >>>%s<<<\n", pathBuffer );
+        return false ;
+
     }
     #endif
 
-    #endif
 
-    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    APPLE man dlopen is clear about the fact that the `cwd` is searched first
-
-    Linux on the other side tells nothing , but the results of testing is
-    that a LD_LIBRARY_PATH has to be set pointing to the cwd
-
-    so I guess we lose nothing by forcing a cwd search
-    */
-
-    // printf( "the system search path >>%s<<\n", getenv( "PATH" ) );
-
-    // try a `cwd` load
-    sprintf(nameBuffer, "./%s%s%s",
-        SHARED_LIBRARY_PREFIX, name, SHARED_LIBRARY_SUFFIX);
-    // printf("SysLibrary.cpp trying a `cwd` load >>%s<<\n", nameBuffer);
-    libraryHandle = dlopen(nameBuffer, RTLD_LAZY);
-    if (libraryHandle)
+    if ( strcmp( name, "rexxapi") && strcmp( name, "rexx") )
     {
-        return true;
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        APPLE manpage for dlopen is clear about the fact that the 'cwd' is searched
+
+        ` When path does not contain a slash character (i.e. it is just a leaf name),
+          dlopen() searches the following until it finds a compatible
+          Mach-O file: LD_LIBRARY_PATH, DYLD_LIBRARY_PATH, current working directory
+
+          When path contains a slash but is not a framework path,
+          dlopen() searches the following until it finds a compatible Mach-O file:
+          DYLD_LIBRARY_PATH (with leaf name from path ),
+          then the supplied path (using current working directory for relative paths). `
+
+        Linux on the other side tells that the 'cwd' is NOT searched
+        and LD_LIBRARY_PATH has to be set pointing to the 'cwd'
+        so I guess we lose nothing by forcing a cwd search
+
+        conclusion ...
+        for Apple/Darwin the './' is irrelevant
+        for Linux the './' is nice to have to give the feeling of the same behaviour
+
+        */
+
+        // try a 'cwd' load
+        sprintf(nameBuffer, "./%s%s%s",
+            SHARED_LIBRARY_PREFIX, name, SHARED_LIBRARY_SUFFIX);
+        if ( TRACE )
+            printf("SysLibrary.cpp trying the load of '%s'\n", nameBuffer );
+        libraryHandle = dlopen(nameBuffer, RTLD_LAZY);
+        if (libraryHandle)
+        {
+            return true;
+        }
     }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        trying an unqualified load might load a library not aligned
-        to the rest of current rexx executable
-
-        since we have all the info needed the safe way is to do a
-        qualified load from the runtime library directory,
-
-        that' s why I flipped  the load try sequence
+    an unqualified load might load a library not aligned
+    to the current rexx executable
+    since we have all the info needed the safe way is to do a
+    qualified load from the runtime library directory,
+    that' s why I flipped  the load try sequence
     */
 
-    // if not found, then try from the runtime lib directory
+    // the runtime lib directory
     sprintf(nameBuffer, "%s%s%s%s",
         SysProcess::getLibraryLocation(), SHARED_LIBRARY_PREFIX, name, SHARED_LIBRARY_SUFFIX);
-    // printf("SysLibrary.cpp trying the runtime lib directory >>%s<<\n", nameBuffer);
+    if ( TRACE )
+      printf("SysLibrary.cpp trying the load of '%s'\n", nameBuffer );
     libraryHandle = dlopen(nameBuffer, RTLD_LAZY);
     if (libraryHandle)
     {
@@ -181,17 +194,17 @@ bool SysLibrary::load(
     }
 
     // try an unqualified load last
-    //
     sprintf(nameBuffer, "%s%s%s",
         SHARED_LIBRARY_PREFIX, name, SHARED_LIBRARY_SUFFIX);
-    // printf("SysLibrary.cpp trying an unqualified load >>%s<<\n", nameBuffer);
+    if ( TRACE )
+      printf("SysLibrary.cpp trying the load of '%s'\n", nameBuffer );
     libraryHandle = dlopen(nameBuffer, RTLD_LAZY);
     if (libraryHandle)
     {
         return true;
     }
 
-    // try a load from the library implied by the rexx executable location
+    // try a
     //
 
     return false;

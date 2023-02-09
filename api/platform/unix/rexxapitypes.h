@@ -43,11 +43,14 @@
 #define __STDC_LIMIT_MACROS
 
 #include <stdlib.h>
+
 #include <unistd.h>
+
 #include <stdint.h>
 #include <limits.h>
 #include <pthread.h>
 
+#if 0
 #if __WORDSIZE == 64 || defined(__64BIT__) || defined(__LP64__) || defined(_LP64)
 #define __REXX64__
 #else
@@ -56,6 +59,8 @@
 
 #ifndef SSIZE_MIN
 #define SSIZE_MIN       (-SIZE_MAX - 1)
+#endif
+
 #endif
 
 #define REXXENTRY

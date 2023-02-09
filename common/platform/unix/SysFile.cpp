@@ -48,8 +48,11 @@
 
 #include <string.h>
 #include <stdlib.h>
+
 #include <unistd.h>
+
 #include <sys/stat.h>
+
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -61,15 +64,6 @@
 #if defined( HAVE_SYS_FILIO_H )
 # include <sys/filio.h>
 #endif
-
-#if defined (__APPLE__) || defined(OPSYS_NETBSD) || defined(OPSYS_FREEBSD) || defined(OPSYS_OPENBSD)
-# define lseek64 lseek
-# define open64 open
-// avoid warning: '(f)stat64' is deprecated: first deprecated in macOS 10.6
-# define stat64 stat
-# define fstat64 fstat
-#endif
-
 
 #include "SysFile.hpp"
 
@@ -130,7 +124,7 @@ bool SysFile::open(const char *name, int openFlags, int openMode, int shareMode)
     flags = openFlags;           // save the initial flag values
 
     // we must open this with the NOINHERIT flag added
-    fileHandle = ::open64(name, openFlags, (mode_t)openMode);
+    fileHandle = ::open(name, openFlags, (mode_t)openMode);
     if ( fileHandle == -1 )
     {
         errInfo = errno;
@@ -160,7 +154,7 @@ bool SysFile::open(const char *name, int openFlags, int openMode, int shareMode)
     {
         // mark this true, and position at the end
         append = true;
-        lseek64(fileHandle, 0, SEEK_END);
+        lseek(fileHandle, 0, SEEK_END);
     }
 
     // set eof flag
@@ -537,7 +531,7 @@ bool SysFile::write(const char *data, size_t len, size_t &bytesWritten)
             // last virtual read.
             int64_t offset = filePointer - bufferedInput + bufferPosition;
             // set the absolute position
-            lseek64(fileHandle, offset, SEEK_SET);
+            lseek(fileHandle, offset, SEEK_SET);
             bufferedInput = 0;
             bufferPosition = 0;
             // we're switching modes.
@@ -595,7 +589,7 @@ bool SysFile::write(const char *data, size_t len, size_t &bytesWritten)
             if ((flags & O_APPEND) != 0)
             {
                 // seek to the end of the file, return if there is an error
-                if (lseek64(fileHandle, 0, SEEK_END) < 0)
+                if (lseek(fileHandle, 0, SEEK_END) < 0)
                 {
                     errInfo = errno;
                     return false;
@@ -961,7 +955,7 @@ bool SysFile::setPosition(int64_t location, int64_t &position)
     else
     {
         // go to the absolute position
-        position = lseek64(fileHandle, location, SEEK_SET);
+        position = lseek(fileHandle, location, SEEK_SET);
         // this return the error indicator?
         if (position == -1)
         {
@@ -1007,15 +1001,15 @@ bool SysFile::seek(int64_t offset, int direction, int64_t &position)
         switch (direction)
         {
             case SEEK_SET:
-                position = lseek64(fileHandle, offset, SEEK_SET);
+                position = lseek(fileHandle, offset, SEEK_SET);
                 break;
 
             case SEEK_CUR:
-                position = lseek64(fileHandle, offset, SEEK_CUR);
+                position = lseek(fileHandle, offset, SEEK_CUR);
                 break;
 
             case SEEK_END:
-                position = lseek64(fileHandle, offset, SEEK_END);
+                position = lseek(fileHandle, offset, SEEK_END);
                 break;
 
             default:
@@ -1044,7 +1038,7 @@ bool SysFile::getPosition(int64_t &position)
     else
     {
         // get the stream postion
-        position = lseek64(fileHandle, 0, SEEK_CUR);
+        position = lseek(fileHandle, 0, SEEK_CUR);
         if (position == -1)
         {
             return false;
@@ -1075,8 +1069,8 @@ bool SysFile::getSize(int64_t &size)
         if (fileSize == -1)
         {
             // have a handle, use fstat() to get the info
-            struct stat64 fileInfo;
-            if (fstat64(fileHandle, &fileInfo) == 0)
+            struct stat fileInfo;
+            if (fstat(fileHandle, &fileInfo) == 0)
             {
                 // regular file?  return the defined size
                 if ((fileInfo.st_mode & S_IFREG) != 0)
@@ -1106,8 +1100,8 @@ bool SysFile::getSize(int64_t &size)
 bool SysFile::getSize(const char *name, int64_t &size)
 {
     // the handle is not active, use the name
-    struct stat64 fileInfo;
-    if (stat64(name, &fileInfo) == 0)
+    struct stat fileInfo;
+    if (stat(name, &fileInfo) == 0)
     {
         // regular file?  return the defined size
         if ((fileInfo.st_mode & S_IFREG) != 0)
@@ -1139,8 +1133,8 @@ bool SysFile::getTimeStamp(const char *&time)
     if (fileHandle >= 0)
     {
         // have a handle, use fstat() to get the info
-        struct stat64 fileInfo;
-        if (fstat64(fileHandle, &fileInfo) == 0)
+        struct stat fileInfo;
+        if (fstat(fileHandle, &fileInfo) == 0)
         {
             // regular file?  return the defined size
             if ((fileInfo.st_mode & S_IFREG) != 0)
@@ -1165,8 +1159,8 @@ bool SysFile::getTimeStamp(const char *name, const char *&time)
 {
     time = "";     // default return value
     // the handle is not active, use the name
-    struct stat64 fileInfo;
-    if (stat64(name, &fileInfo) == 0)
+    struct stat fileInfo;
+    if (stat(name, &fileInfo) == 0)
     {
         // regular file?  return the defined size
         if ((fileInfo.st_mode & (S_IFREG | S_IFDIR)) != 0)
@@ -1197,8 +1191,8 @@ void SysFile::getStreamTypeInfo()
         isTTY = true;
     }
     // have a handle, use fstat() to get the info
-    struct stat64 fileInfo;
-    if (fstat64(fileHandle, &fileInfo) == 0)
+    struct stat fileInfo;
+    if (fstat(fileHandle, &fileInfo) == 0)
     {
         //  character device?  set those characteristics
         if ((fileInfo.st_mode & S_IFCHR) != 0)

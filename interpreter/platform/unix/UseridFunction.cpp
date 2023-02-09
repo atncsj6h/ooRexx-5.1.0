@@ -44,6 +44,7 @@
 #endif
 
 #include <unistd.h>
+
 #include "RexxCore.h"
 #include "StringClass.hpp"
 #include "SystemInterpreter.hpp"

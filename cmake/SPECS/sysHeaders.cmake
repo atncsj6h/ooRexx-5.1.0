@@ -8,6 +8,7 @@ include( checkHeader )
 #
 check_header(
   alloca.h
+  crt_externs.h
   dlfcn.h
   features.h
   filehdr.h

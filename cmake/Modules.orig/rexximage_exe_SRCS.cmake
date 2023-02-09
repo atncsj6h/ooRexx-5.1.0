@@ -3,12 +3,12 @@
 include_guard( GLOBAL )
 
 set( rexximage_exe_SRCS
-  ${utilities_rexximage_dir}/rexximage.cpp
+  ${executables_rexximage_dir}/rexximage.cpp
 )
 
 # Include file definition
 set( rexximage_exe_include_DIRS
-  ${lib_dir}
+  ${internals_dir}
   ${api_dir}
   ${api_platform_dir}
 )

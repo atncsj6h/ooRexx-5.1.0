@@ -53,7 +53,6 @@
 # include <dlfcn.h>
 #endif
 
-#include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
@@ -64,7 +63,9 @@
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
-#include <errno.h>
+
+#include <unistd.h>
+
 #ifdef HAVE_KDMKTONE
 # include <linux/kd.h>
 #endif

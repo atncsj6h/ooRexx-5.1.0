@@ -82,7 +82,7 @@ protected:
 class Numerics
 {
 public:
-#ifdef __REXX64__
+#if __SIZEOF_POINTER__ == 8
     static const wholenumber_t MAX_WHOLENUMBER = __INT64_C(999999999999999999);
     static const wholenumber_t MIN_WHOLENUMBER = __INT64_C(-999999999999999999);
     // the digits setting used internally for function/method arguments to allow
@@ -104,7 +104,7 @@ public:
     static const wholenumber_t REXXINTEGER_DIGITS;
     static const wholenumber_t MIN_REXXINTEGER = MIN_WHOLENUMBER;
     static const wholenumber_t MAX_REXXINTEGER = MAX_WHOLENUMBER;
-#ifdef __REXX64__
+#if __SIZEOF_POINTER__ == 8
     static const wholenumber_t REXXINTEGER_BITS = 64;
 #else
     static const wholenumber_t REXXINTEGER_BITS = 32;

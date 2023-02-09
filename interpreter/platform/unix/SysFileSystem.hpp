@@ -50,16 +50,8 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <errno.h>
+
 #include <sys/stat.h>
-
-
-#if defined (__APPLE__) || defined(OPSYS_NETBSD) || defined(OPSYS_FREEBSD) || defined(OPSYS_OPENBSD)
-// avoid warning: '(f)stat64' is deprecated: first deprecated in macOS 10.6
-#define stat64 stat
-#define fstat64 fstat
-#define open64 open
-#define lstat64 lstat
-#endif
 
 #if defined(PATH_MAX)
 #define MAXIMUM_PATH_LENGTH PATH_MAX + 1
@@ -166,7 +158,7 @@ public:
          FileAttributes()
          {}
 
-         struct stat64 findFileData;
+         struct stat findFileData;
 
          bool isDirectory()
          {
@@ -186,7 +178,7 @@ protected:
     bool completed;              // the iteration completed flag
     const char *directory;       // the directory we're searching through
     struct dirent *entry;        // contains the name of the file
-    struct stat64 findFileData;  // contains the file attributes
+    struct stat findFileData;    // contains the file attributes
     DIR    *handle;              // the directory handle we're iterating over
     bool    caseLess;            // indicates we do caseless searches
     const char *patternSpec;     // the spec we test against

@@ -51,7 +51,7 @@
 #include <limits.h>
 #include <stdio.h>
 
-#ifdef __REXX64__
+#if __SIZEOF_POINTER__ == 8
 
 // Array for valid whole number at various digits settings
 //  for value 1-18.

@@ -1430,7 +1430,7 @@ RexxRoutine0(RexxStringObject, SysUtilVersion)
 {
     char buffer[256];
     /* format into the buffer     */
-    snprintf(buffer, sizeof(buffer), "%d.%d.%d", ORX_VER, ORX_REL, ORX_MOD);
+    snprintf(buffer, sizeof(buffer), "%s", VERSION_TRIPLET );
     return context->String(buffer);
 }
 

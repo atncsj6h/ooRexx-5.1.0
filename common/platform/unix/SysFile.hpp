@@ -47,7 +47,9 @@
 
 #include "rexxapitypes.h"
 #include <fcntl.h>
+
 #include <sys/stat.h>
+
 
 // The following define the platform independent open flags
 // openFlags argument flags
