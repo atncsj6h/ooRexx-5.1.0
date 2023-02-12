@@ -513,7 +513,7 @@ endif()
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # the support files
-foreach( X path.here path.append path.remove )
+foreach( X path.here path.append path.remove portable-startup.sh )
   install_X( ${support_dir}/bin/${X} )
 endforeach()
 
@@ -653,16 +653,12 @@ add_custom_target( cpack
   )
 
 add_custom_target( portable
-
   COMMAND bash ${CMAKE_SOURCE_DIR}/${support_dir}/bin/portable-build.bash
     --makeself ${CMAKE_SOURCE_DIR}/${support_dir}/bin/makeself.sh
     --project  ${PROJECT}
     --prefix   ${CMAKE_INSTALL_PREFIX}
     --triplet  ${VERSION_TRIPLET}
     --version  ${VERSION_STRING}
-
-# COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_PREFIX=portable -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
-
   )
 
 
