@@ -1,84 +1,99 @@
-#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Copyright (c) 2022, 2023 Enrico Sorichetti
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file BOOST_LICENSE_1_0.txt or copy at
+# http://www.boost.org/LICENSE_1_0.txt)
 
-set( ${@PROJECT@}_EXENAME rexx )
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if( $ENV{OOREXX_CONFIG_DEBUG} )
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  message( STATUS "CMake version  '${CMAKE_VERSION}'" )
+  message( STATUS "Processing     '${CMAKE_CURRENT_LIST_FILE}'" )
 
-find_program( ${@PROJECT@}_EXECUTABLE ${@PROJECT@}_EXENAME )
-if( REXX_EXECUTABLE )
-    message( "++ REXX_EXECUTABLE ${REXX_EXECUTABLE} " )
-    get_filename_component(OOREXX_INSTALL_PREFIX "${REXX_EXECUTABLE}" DIRECTORY )
-    get_filename_component(OOREXX_INSTALL_PREFIX "${OOREXX_INSTALL_PREFIX}" DIRECTORY )
-    message( "++ OOREXX_INSTALL_PREFIX ${OOREXX_INSTALL_PREFIX} " )
-endif()
-
-if( NOT OOREXX_INSTALL_PREFIX
-    AND NOT DEFINED ENV{OOREXX_INSTALL_PREFIX}
-    AND NOT DEFINED ENV{REXX_HOME} )
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  if( CMAKE_VERSION VERSION_LESS  3.25 )
     message( FATAL_ERROR "
- You must provide the ooRexx install prefix,
- use -DOOREXX_INSTALL_PREFIX=<.........> " )
+   CMake '3.25' or higher is required,
+   You are running '${CMAKE_VERSION}'" )
+  endif()
+  cmake_minimum_required( VERSION ${CMAKE_VERSION} )
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  if( NOT DEFINED ENV{CMTK} )
+    message( FATAL ERROR "
+   unable to locate the cmToolKit directory, debug not available" )
+  endif()
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  set( CMAKE_MODULE_PATH $ENV{CMTK}/cmake/Modules )
+
+  #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  include( vDump OPTIONAL RESULT_VARIABLE HAVE_VDUMP )
+  set( VDUMP TRUE )
+  include( vSnap OPTIONAL RESULT_VARIABLE HAVE_VSNAP )
+  set( VSNAP TRUE )
+endif()
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+set( ooRexx_EXENAME @EXENAME@ )
+
+find_program( ooRexx_EXECUTABLE ${ooRexx_EXENAME} )
+if( ooRexx_EXECUTABLE )
+    message( "++  ooRexx_EXECUTABLE '${ooRexx_EXECUTABLE}' " )
+    get_filename_component(ooRexx_PREFIX ${ooRexx_EXECUTABLE} DIRECTORY )
+    get_filename_component(ooRexx_PREFIX ${ooRexx_PREFIX} DIRECTORY )
+    message( "++  ooRexx_PREFIX '${ooRexx_PREFIX}' " )
+else()
+    message( FATAL_ERROR "
+ unable to find the executable '${ooRexx_EXENAME}' " )
 endif()
 
+set( ooRexx_FOUND           1 )
 
-set( @PROJECT@_FOUND           1 )
+set( ooRexx_VERSION         "@VERSION_TRIPLET@" )
+set( ooRexx_VERSION_STRING  "@VERSION_STRING@" )
+set( ooRexx_DESCRIPTION     "@DESCRIPTION@ ")
 
-set( @PROJECT@_VERSION          @VERSION_TRIPLET@ )
-set( @PROJECT@_VERSION_STRING   @VERSION_STRING@ )
-set( @PROJECT@_DESCRIPTION      @DESCRIPTION@ )
+#
+set( ooRexx_BINDIR          "@INST_BIN_DIR@" )
+set( ooRexx_INCDIR          "@INST_INC_DIR@" )
+set( ooRexx_LIBDIR          "@INST_LIB_DIR@" )
 
-set( @PROJECT@_PROVIDES         @PROVIDES@ )
+set( ooRexx_INCLUDEDIR      "${ooRexx_PREFIX}/@INST_INC_DIR@" )
+set( ooRexx_CFLAGS          "-I${ooRexx_INCLUDEDIR}" )
+set( ooRexx_CFLAGS_I        "" )
+set( ooRexx_CFLAGS_OTHER    "" )
 
-set( @PROJECT@_EXENAME          @EXENAME@ )
-set( @PROJECT@_PREFIX           @INST_PREFIX@ )
-set( @PROJECT@_BINDIR           @INST_BIN_DIR@ )
-set( @PROJECT@_INCDIR           @INST_INC_DIR@ )
-set( @PROJECT@_LIBDIR           @INST_LIB_DIR@ )
+set( ooRexx_LIBDIR          "@INST_PREFIX@/@INST_LIB_DIR@" )
+set( ooRexx_LIBRARIES       "@PROVIDES@" )
 
-set( @PROJECT@_MODULE_NAME      @ooRexx@ )
-
-set( @PROJECT@_CFLAGS           "-I@INST_PREFIX@/@INST_INC_DIR@"
-set( @PROJECT@_CFLAGS_I         "" )
-set( @PROJECT@_CFLAGS_OTHER     "" )
-set( @PROJECT@_INCLUDEDIR       "@INST_PREFIX@/@INST_INC_DIR@" )
-
-set( @PROJECT@_LDFLAGS          "-L@INST_PREFIX@/@INST_LIB_DIR@")
-set( LLIBS "")
-foreach( library  ${@PROJECT@_PROVIDES} )
-  set( @PROJECT@_LDFLAGS "${@PROJECT@_LDFLAGS};-l${LLIB}" )
+set( ooRexx_LDFLAGS         "-L@INST_PREFIX@/@INST_LIB_DIR@" )
+foreach( lib  @PROVIDES@ )
+  list( APPEND ooRexx_LDFLAGS
+    -l${lib} )
 endforeach()
 
-set( @PROJECT@_LDFLAGS_OTHER    "" )
+set( ooRexx_LDFLAGS_OTHER   "" )
+set( ooRexx_LIBS_L          "" )
+set( ooRexx_LIBS_OTHER      "" )
+set( ooRexx_LIBS_PATHS      "" )
 
-set( @PROJECT@_LIBDIR           "@INST_PREFIX@/@INST_LIB_DIR@" )
-set( @PROJECT@_LIBRARIES        "@PROJECT@_PROVIDES" )
-set( @PROJECT@_LIBS_L           "" )
-set( @PROJECT@_LIBS_OTHER       "" )
-set( @PROJECT@_LIBS_PATHS       "" )
+set( ooRexx_LINK_LIBRARIES  "" )
+foreach( lib  @PROVIDES@ )
+  list( APPEND ooRexx_LINK_LIBRARIES
+    ${ooRexx_LIBDIR}/lib${lib}.dylib )
+endforeach()
 
-
-[[ ooRexx_CFLAGS_I=''
-[[ ooRexx_CFLAGS_OTHER=''
-[[ ooRexx_CFLAGS='-I/opt/ooRexx/include'
-[[ ooRexx_FOUND='1'
-[[ ooRexx_INCLUDEDIR='/opt/ooRexx/include'
-[[ ooRexx_LDFLAGS_OTHER=''
-[[ ooRexx_LDFLAGS='-L/opt/ooRexx/lib;-lrexx;-lrexxapi'
-[[ ooRexx_LIBDIR='/opt/ooRexx/lib'
-[[ ooRexx_LIBRARIES='rexx;rexxapi'
-[[ ooRexx_LIBS_L=''
-[[ ooRexx_LIBS_OTHER=''
-[[ ooRexx_LIBS_PATHS=''
-[[ ooRexx_LINK_LIBRARIES='/opt/ooRexx/lib/librexx.dylib;/opt/ooRexx/lib/librexxapi.dylib'
-[[ ooRexx_MODULE_NAME='ooRexx'
-
-[[ ooRexx_STATIC_CFLAGS_I=''
-[[ ooRexx_STATIC_CFLAGS_OTHER=''
-[[ ooRexx_STATIC_CFLAGS='-I/opt/ooRexx/include'
-[[ ooRexx_STATIC_LDFLAGS_OTHER=''
-[[ ooRexx_STATIC_LDFLAGS='-L/opt/ooRexx/lib;-lrexx;-lrexxapi'
-[[ ooRexx_STATIC_LIBDIR=''
-[[ ooRexx_STATIC_LIBRARIES='rexx;rexxapi'
-[[ ooRexx_STATIC_LIBS_L=''
-[[ ooRexx_STATIC_LIBS_OTHER=''
-[[ ooRexx_STATIC_LIBS_PATHS=''
-[[ ooRexx_VERSION='5'
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if( HAVE_VDUMP )
+  vdump( "this" "this" )
+endif()
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

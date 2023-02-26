@@ -33,6 +33,7 @@ list( APPEND TEMPL_SOURCE_PATH $ENV{CMTK}/cmake/Templates )
 include( vDump )
 include( vDrop )
 include( vSnap )
+# set( VSNAP TRUE )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # deprecate 'in-source' builds ( source directory/subdirectories )
@@ -71,19 +72,14 @@ set( PROJECT ooRexx )
 set( VERSION  5 )
 set( RELEASE  1 )
 set( MODLEVL  0 )
-
 # let's set the revision/BLDLEVL to 0 for now
-# will deal later with different SCMs ( subverion/git )
+# will deal later with that for different SCMs ( subverion/git )
 set( BLDLEVL  0 )
 
 set( VERSION_TRIPLET "${VERSION}.${RELEASE}.${MODLEVL}" )
-
 set( EXENAME rexx )
-
 set( SOVERSION 4 )
-
 set( PLATFORM unix )
-
 set( DESCRIPTION "Open Object Rexx interpreter and libraries." )
 set( PROVIDES rexx rexxapi )
 set( REQUIRES )
@@ -175,7 +171,10 @@ add_compile_options( -fomit-frame-pointer )
 # setup the installation paths according to the GNU standards
 include( GNUInstallDirs )
 
-set( WELL_KNOWN_PREFIX_LIST  /usr /usr/local /opt /opt/local $ENV{HOME}/GNULayout )
+set( WELL_KNOWN_PREFIX_LIST
+  /usr /usr/local
+  /opt /opt/local
+  $ENV{HOME}/GNULayout )
 vsnap( WELL_KNOWN_PREFIX_LIST )
 if( "${CMAKE_INSTALL_PREFIX}" IN_LIST WELL_KNOWN_PREFIX_LIST )
   set( WELL_KNOWN_PREFIX 1 )
@@ -619,6 +618,7 @@ foreach( library  ${PROVIDES} )
   set( INST_LIBS "${INST_LIBS}-l${library} " )
 endforeach()
 string( STRIP "${INST_LIBS}" INST_LIBS )
+vsnap( INST_LIBS )
 
 configure_template( pkgconfig.pc.in ooRexx.pc)
 if( HAVE_OOREXX_PC )
@@ -644,14 +644,6 @@ if( HAVE_CMAKE_UNINSTALL_CMAKE )
 endif()
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-set( CPACK_PACKAGE_CHECKSUM SHA512 )
-add_custom_target( cpack
-  COMMAND export CMAKE_MANIFEST_PREFIX=CPack
-  COMMAND ${CMAKE_CPACK_COMMAND} -G TXZ
-# COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_PREFIX=portable -P ${CMAKE_BINARY_DIR}/cmake_install.cmake
-
-  )
-
 add_custom_target( portable
   COMMAND bash ${CMAKE_SOURCE_DIR}/${support_dir}/bin/portable-build.bash
     --makeself ${CMAKE_SOURCE_DIR}/${support_dir}/bin/makeself.sh
@@ -660,7 +652,6 @@ add_custom_target( portable
     --triplet  ${VERSION_TRIPLET}
     --version  ${VERSION_STRING}
   )
-
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 include( configurationReport OPTIONAL )
