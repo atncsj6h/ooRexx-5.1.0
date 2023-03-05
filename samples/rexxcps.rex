@@ -36,22 +36,21 @@
 /* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.               */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
-/* */
-rexxcps=2.1    /* REXXCPS version; quotable only if code unchanged */
+
+rexxcps="5.1.0"   /* REXXCPS version; same as ooRexx version triplet*/
 trace o
 
-parse arg count averaging .
-if count == '' then do
-    count=100
-end
-if averaging == '' then do
+parse arg averaging count tracevar .
+if averaging = '' then ,
     averaging=100
-end
-tracevar='o'
+if count = '' then ,
+    count=601
+if tracevar = '' then ,
+    tracevar = 'O'
+
 signal on novalue
 parse source  source  1 system .
 parse version version
-
 
 say '----- REXXCPS' rexxcps '-- Measuring REXX clauses/second -----'
 say ' REXX version is:' version
@@ -63,7 +62,7 @@ do i=1 to averaging
   call time 'R'
   do count; end
   empty=time('R')+empty
-  end
+end
 empty=empty/averaging
 
 
@@ -88,9 +87,9 @@ do i=1 to averaging
         if j<5 then do   /* This path taken */
           acompound.key1.loop=acompound.key1.loop+1
           if j=2 then leave
-          end
+        end
         iterate
-        end /* j */
+      end /* j */
       avar.=1.0''loop
       select
         when flag='string' then say 'FailedS1'
@@ -105,7 +104,7 @@ do i=1 to averaging
         when avar.flag.3=0 then say 'FailedT2'
         when flag          then avar.1.2=avar.1.2*1.1
         when flag==0       then flag=1
-        end
+      end
       parse value 'Foo Bar' with v1 +5 v2 .
       trace value trace(); address value address()
       call subroutine 'with' 2 'args', '(This is the second)'1''1
@@ -113,25 +112,35 @@ do i=1 to averaging
       rc='is an awfully boring program This'; parse var rc p2 (p0) p6
       rc='an awfully boring program This is'; parse var rc p3 (p0) p7
       rc='awfully boring program This is an'; parse var rc p4 (p0) p8
-      end loop
-    end
+    end loop
+  end
   full=time('R')+full
   trace off
-  end
+end
 full=full/averaging
 
 looptime=(full-empty)/count
+
 /* Developer's statistics: */
-if left(tracevar,1)='O' then nop; else do
+if left(tracevar,1)='O' then nop;
+else do
   say
   say 'Total (full DO):' full-empty 'secs (average of' averaging ,
     'measures of' count 'iterations)'
   say 'Time for one iteration (1000 clauses) was:' looptime 'seconds'
-  end
+end
 
-say
-say'     Performance:' format(1000/looptime,,0) 'REXX clauses per second'
-say
+if looptime = 0 Then do
+  say '     The granularity of the system clock appears to be too coarse to'
+  say '     obtain an effective result.  Re-run this progam and increase the'
+  say '     number of iterations or the repeat count.'
+end
+else do
+
+  say
+  say'     Performance:' format(1000/looptime,,0) 'REXX clauses per second'
+  say
+end
 
 exit
 
