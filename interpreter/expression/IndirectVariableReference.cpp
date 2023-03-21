@@ -129,6 +129,10 @@ ArrayClass *RexxVariableReference::list(RexxActivation *context)
     RexxObject *value = variableObject->getValue(context);
     // force to string form
     Protected<RexxString> nameString = value->requestString();
+
+    // and trace it
+    context->traceResultValue(nameString);
+
     // get this as a list of words
     Protected<ArrayClass> list = ((RexxString *)nameString)->subWords(OREF_NULL, OREF_NULL);
 

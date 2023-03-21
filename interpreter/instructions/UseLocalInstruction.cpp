@@ -118,16 +118,16 @@ void RexxInstructionUseLocal::execute(RexxActivation *context, ExpressionStack *
     // standard trace on entry.
     context->traceInstruction(this);
 
-    // not allowed in a method context.
+    // only allowed in a method context.
     if (!context->inMethod())
     {
         reportException(Error_Execution_use_local_method);
     }
 
-    // the context processeses these
+    // the context processes these
     context->autoExpose(variables, variableCount);
 
-    // and standare debug pause.
+    // and standard debug pause.
     context->pauseInstruction();
 }
 

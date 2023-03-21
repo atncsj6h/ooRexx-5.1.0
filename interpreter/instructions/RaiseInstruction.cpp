@@ -237,6 +237,7 @@ void RexxInstructionRaise::execute(RexxActivation *context, ExpressionStack *sta
                 context->traceArgument(GlobalNames::NULLSTRING);
             }
         }
+        context->traceKeywordResult(GlobalNames::ARRAY, _additional);
     }
     // we might have had this via the ADDITIONAL() option.
     else if (this->additional[0] != OREF_NULL)

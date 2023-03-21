@@ -118,16 +118,16 @@ void RexxInstructionExpose::execute(RexxActivation *context, ExpressionStack *st
     // standard trace on entry.
     context->traceInstruction(this);
 
-    // not allowed in a method context.
+    // only allowed in a method context.
     if (!context->inMethod())
     {
         reportException(Error_Execution_expose_method);
     }
 
-    // the context processeses these
+    // the context processes these
     context->expose(variables, variableCount);
 
-    // and standare debug pause.
+    // and standard debug pause.
     context->pauseInstruction();
 }
 

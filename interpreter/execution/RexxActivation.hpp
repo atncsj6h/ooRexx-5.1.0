@@ -255,7 +255,7 @@ class RexxActivation : public ActivationBase
    RexxObject      * rexxVariable(RexxString *);
    void              pushEnvironment(RexxObject *);
    RexxObject      * popEnvironment();
-   void              processTraps();
+   bool              processTraps();
    void              mergeTraps(QueueClass *);
    uint64_t          getRandomSeed(RexxInteger *);
    VariableDictionary *getObjectVariables();

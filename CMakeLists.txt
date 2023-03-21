@@ -178,6 +178,10 @@ set( WELL_KNOWN_PREFIX_LIST
 vsnap( WELL_KNOWN_PREFIX_LIST )
 if( "${CMAKE_INSTALL_PREFIX}" IN_LIST WELL_KNOWN_PREFIX_LIST )
   set( WELL_KNOWN_PREFIX 1 )
+else()
+  get_filename_component( _we  "${CMAKE_INSTALL_PREFIX}" NAME_WE )
+  get_filename_component( _wle "${CMAKE_INSTALL_PREFIX}" NAME_WLE )
+  vsnap( CMAKE_INSTALL_PREFIX _we _wle )
 endif( )
 
 include( installDirectories )
