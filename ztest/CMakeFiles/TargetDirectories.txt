@@ -1,2 +1,0 @@
-/Users/enrico/ooRexx/ooRexx-5.1.0/ztest/CMakeFiles/edit_cache.dir
-/Users/enrico/ooRexx/ooRexx-5.1.0/ztest/CMakeFiles/rebuild_cache.dir

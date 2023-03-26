@@ -1,8 +1,8 @@
 # A make file that should work on most Unix-like platforms
 
-REXX_CFLAGS := $(shell ooRexx-config --cflags) -fPIC
+REXX_CFLAGS := $(shell oorexx-config --cflags) -fPIC
 
-REXX_LFLAGS := $(shell ooRexx-config --libs) $(shell ooRexx-config --rpath)
+REXX_LFLAGS := $(shell oorexx-config --libs) $(shell oorexx-config --rpath)
 
 UNAME := $(shell uname -s)
 ifeq ($(UNAME),Darwin)

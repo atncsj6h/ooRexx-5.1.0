@@ -2,9 +2,9 @@
 
 LIB2 = rexxapi2
 
-REXX_CFLAGS = `ooRexx-config --cflags` -fPIC
+REXX_CFLAGS = `oorexx-config --cflags` -fPIC
 
-REXX_LFLAGS := $(shell ooRexx-config --libs) $(shell ooRexx-config --rpath)
+REXX_LFLAGS := $(shell oorexx-config --libs) $(shell oorexx-config --rpath)
 
 UNAME := $(shell uname -s)
 ifeq ($(UNAME),Darwin)

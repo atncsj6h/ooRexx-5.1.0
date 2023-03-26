@@ -630,9 +630,9 @@ if( HAVE_OOREXX_PC )
     DESTINATION ${INST_LIB_DIR}/pkgconfig )
 endif()
 
-configure_template( pkgconfig.sh.in ooRexx-config )
+configure_template( pkgconfig.sh.in oorexx-config )
 if( HAVE_OOREXX_CONFIG )
-  install( FILES ${CMAKE_BINARY_DIR}/ooRexx-config
+  install( FILES ${CMAKE_BINARY_DIR}/oorexx-config
     PERMISSIONS OWNER_EXECUTE OWNER_READ OWNER_WRITE
                 GROUP_EXECUTE GROUP_READ
                 WORLD_EXECUTE WORLD_READ

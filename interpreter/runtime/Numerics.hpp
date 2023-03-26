@@ -112,7 +112,7 @@ public:
 
     static const wholenumber_t MAX_EXPONENT = 999999999;
     static const wholenumber_t MIN_EXPONENT = -999999999;
-    static const wholenumber_t DEFAULT_DIGITS  = 9;
+    static const wholenumber_t DEFAULT_DIGITS  = 16;
     // a digits setting for full range integer conversion
     static const size_t  MAX_STRINGSIZE = MAX_WHOLENUMBER;
 
