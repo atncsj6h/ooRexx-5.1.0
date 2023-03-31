@@ -624,9 +624,9 @@ endforeach()
 string( STRIP "${INST_LIBS}" INST_LIBS )
 vsnap( INST_LIBS )
 
-configure_template( pkgconfig.pc.in ooRexx.pc)
+configure_template( pkgconfig.pc.in oorexx.pc)
 if( HAVE_OOREXX_PC )
-  install( FILES ${CMAKE_BINARY_DIR}/ooRexx.pc
+  install( FILES ${CMAKE_BINARY_DIR}/oorexx.pc
     DESTINATION ${INST_LIB_DIR}/pkgconfig )
 endif()
 
