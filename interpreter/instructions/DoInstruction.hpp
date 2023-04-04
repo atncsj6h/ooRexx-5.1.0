@@ -79,7 +79,7 @@ class RexxInstructionSimpleDo : public RexxBaseBlockInstruction
      // methods required by RexxBlockInstruction;
      bool isLoop()override { return false; }
      // most DO blocks are loops.  The simple styles will need to override.
-     EndBlockType getEndStyle()override { return DO_BLOCK; }
+     EndBlockType getEndStyle()override { return getLabel() == OREF_NULL ? DO_BLOCK : LABELED_DO_BLOCK; }
 };
 
 
