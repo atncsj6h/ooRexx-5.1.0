@@ -170,15 +170,28 @@ void RexxInstructionTrace::execute(RexxActivation *context, ExpressionStack *sta
         // Even trace gets traced :-)
         context->traceKeywordResult(GlobalNames::VALUE, result);
         Protected<RexxString> value = result->requestString();
-        // again, we don't change anything if we're already in debug mode.
-        if (!context->inDebug())
+
+        // if this is not numeric, it is a TRACE option.
+        wholenumber_t number;
+        if (!value->requestNumber(number, number_digits()))
         {
-            context->setTrace(value);
+            // again, we don't change anything if we're already in debug mode.
+            if (!context->inDebug())
+            {
+                context->setTrace(value);
+            }
+            else
+            {
+                // in debug mode means we do need to pause.
+                context->pauseInstruction();
+            }
         }
+        // a valid number
         else
         {
-            // in debug mode means we do need to pause.
-            context->pauseInstruction();
+            // turn on the skip mode in the context.  A negative value also suppresses
+            // the tracing.
+            context->debugSkip(number);
         }
     }
 }

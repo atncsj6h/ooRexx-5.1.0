@@ -64,7 +64,6 @@ void * DoBlock::operator new(size_t size)
  * Construct a runtime DO block instance.
  *
  * @param _parent The instruction this represents.
- * @param _indent The current trace indentation level.
  */
 DoBlock::DoBlock(RexxActivation *context, RexxBlockInstruction *_parent)
 {
@@ -119,7 +118,6 @@ void DoBlock::liveGeneral(MarkReason reason)
  * Handle a new iteration of a loop, with setting of the counter variable, if required.
  *
  * @param context The current execution context,
- * @param v       The counter variable (if any) to set.
  */
 void DoBlock::setCounter(RexxActivation *context)
 {

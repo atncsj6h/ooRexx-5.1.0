@@ -3121,7 +3121,7 @@ void Activity::sayOutput(RexxActivation *activation, RexxString *line)
 
 
 /**
- * Read a line of internactive debug.
+ * Read a line of interactive debug.
  *
  * @param activation The activation context.
  *
