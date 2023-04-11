@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /* Copyright (c) 1995, 2004 IBM Corporation. All rights reserved.             */
-/* Copyright (c) 2005, 2023 Rexx Language Association. All rights reserved.   */
+/* Copyright (c) 2005-2023 Rexx Language Association. All rights reserved.    */
 /*                                                                            */
 /* This program and the accompanying materials are made available under       */
 /* the terms of the Common Public License v1.0 which accompanies this         */
@@ -52,7 +52,12 @@ void SystemInterpreter::getCurrentTime(RexxDateTime *Date )
     struct timeval tv;
     gettimeofday(&tv, NULL);
 
+#ifdef AIX
+    struct tm SD;                        /* system date area           */
+    SystemDate = localtime_r((time_t *)&tv.tv_sec, &SD);
+#else
     SystemDate = localtime((time_t *)&tv.tv_sec); /* convert           */
+#endif
 
     Date->hours = SystemDate->tm_hour;
     Date->minutes = SystemDate->tm_min;
@@ -63,9 +68,12 @@ void SystemInterpreter::getCurrentTime(RexxDateTime *Date )
     Date->year = SystemDate->tm_year + 1900;
 
     struct tm *GMTDate;                  /* system date structure ptr  */
-
+#ifdef AIX
+    struct tm GD;                        /* system date area           */
+    GMTDate = gmtime_r((time_t *)&tv.tv_sec, &GD);
+#else
     GMTDate = gmtime((time_t *)&tv.tv_sec);
-
+#endif
     // a negative value means that mktime() should (use timezone information and
     // system databases to) attempt to determine whether DST is in effect at the
     // specified time.
@@ -169,7 +177,6 @@ RexxMethod0(int, ticker_createTimer)
 
     // set this as state variables
     context->SetObjectVariable("EVENTSEMHANDLE", context->NewPointer(sem));
-    context->SetObjectVariable("TIMERSTARTED", context->True());
     return 0;
 }
 
