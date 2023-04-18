@@ -43,11 +43,38 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <dlfcn.h>
+#include <libgen.h>
+
+#include "Utilities.hpp"
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#if defined( HAVE_NSGETEXECUTABLEPATH ) && defined( HAVE_DLADDR )
+#include <mach-o/dyld.h>
+#endif
 
 #include "oorexxapi.h"
 
-
 int main (int argc, char **argv) {
+
+#if defined( HAVE_NSGETEXECUTABLEPATH ) && defined( HAVE_DLADDR )
+    Dl_info dlInfo;
+
+    int RC = 0;
+
+    char buffer[PATH_MAX+1];
+    uint32_t prefln = PATH_MAX ;
+
+    char prefix[PATH_MAX+1];
+    char * prefix_p = prefix ;
+
+    char buf1[PATH_MAX+1] ;
+    char buf2[PATH_MAX+1] ;
+#endif
+
     int   i;                             /* loop counter                      */
     int   rc = 0;                        /* actually running program RC       */
     const char *program_name = NULL;     /* name to run                       */
@@ -66,6 +93,65 @@ int main (int argc, char **argv) {
     RexxArrayObject      rxargs, rxcargs;
     RexxDirectoryObject  dir;
     RexxObjectPtr        result;
+
+
+#if defined( HAVE_NSGETEXECUTABLEPATH ) && defined( HAVE_DLADDR )
+
+#if 0
+    fprintf( stderr, "\n");
+    fprintf( stderr, "rexx, LIBRARY_PATH congruency check at entry \n") ;
+    fprintf( stderr, "\n");
+#endif
+
+    RC = _NSGetExecutablePath(prefix, &prefln) ;
+    if ( RC != 0)
+    {
+        fprintf( stderr, "\n");
+        fprintf( stderr, "rexx, unable to obtain the path of the executable\n") ;
+        fprintf( stderr, "      _NSGetExecutablePath( ... ) RC(%d)\n", RC ) ;
+        fprintf( stderr, "\n");
+        return ( -1 ) ;
+    }
+    //  printf( "%4d, exename   %s\n", __LINE__, prefix) ;
+
+    prefix_p = dirname_r( prefix_p, buffer ) ;
+    prefix_p = dirname_r( prefix_p, buffer ) ;
+    snprintf( buf1, sizeof(buf1), "%s/lib", prefix_p ) ;
+    //  printf( "%4d, lib needed  %s\n", __LINE__, buf1 ) ;
+
+    RC = dladdr( (void *)RexxGetVersionInformation, &dlInfo ) ;
+    if ( RC == 0 )
+    {
+        fprintf( stderr, "\n");
+        fprintf( stderr, "rexx, unable to obtain the path of 'librexx.dylib'\n");
+        fprintf( stderr, "      dladdr( ... ) RC(%d)\n", RC ) ;
+        fprintf( stderr, "\n");
+        return ( -1 ) ;
+    }
+
+    snprintf( buf2, sizeof(buf2), "%s", dirname_r( dlInfo.dli_fname, buffer )) ;
+    //  printf( "%4d, lib currnt  %s\n", __LINE__, buf2 ) ;
+
+    RC = strcmp(buf1, buf2) ;
+    if ( RC != 0 )
+    {
+        fprintf( stderr, "\n");
+        fprintf( stderr, "rexx, LIBRARY_PATH mismatch \n");
+        fprintf( stderr, "      expected '%s'\n", buf1 );
+        fprintf( stderr, "      received '%s'\n", buf2 );
+        fprintf( stderr, "\n");
+        return ( -1 ) ;
+    }
+
+#if 0
+    fprintf( stderr, "\n");
+    fprintf( stderr, "rexx, LIBRARY_PATH congruency check at exit \n") ;
+    fprintf( stderr, "      expected '%s'\n", buf1 );
+    fprintf( stderr, "      received '%s'\n", buf2 );
+    fprintf( stderr, "\n");
+#endif
+
+#endif
 
     arg_buffer[0] = '\0';                /* default to no argument string     */
     for (i = 1; i < argc; i++) {         /* loop through the arguments        */

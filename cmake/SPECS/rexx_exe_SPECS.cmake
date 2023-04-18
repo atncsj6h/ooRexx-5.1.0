@@ -11,6 +11,7 @@ set( rexx_exe_include_DIRS
   ${internals_dir}
   ${api_dir}
   ${api_platform_dir}
+  ${common_dir}
   ${messages_dir}
 )
 
