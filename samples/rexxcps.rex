@@ -40,13 +40,23 @@
 rexxcps="5.1.0"   /* REXXCPS version; same as ooRexx version triplet*/
 trace o
 
-parse arg averaging count tracevar .
-if averaging = '' then ,
-    averaging=100
-if count = '' then ,
-    count=601
+parse arg measures iterations tracevar .
+if measures = '' then ,
+    measures=109
+if iterations = '' then ,
+    iterations=601
 if tracevar = '' then ,
     tracevar = 'O'
+
+if \datatype(measures,"N") then do
+  say "measures must be numeric, found '"measures"'"
+  exit
+end
+
+if \datatype(iterations,"N") then do
+  say "iterations must be numeric, found '"iterations"'"
+  exit
+end
 
 signal on novalue
 parse source  source  1 system .
@@ -55,23 +65,24 @@ parse version version
 say '----- REXXCPS' rexxcps '-- Measuring REXX clauses/second -----'
 say ' REXX version is:' version
 say '       System is:' system
-say '       Averaging:' averaging 'measures of' count 'iterations'
+say '       Averaging:' measures 'measures of' iterations 'iterations'
 
 empty=0
-do i=1 to averaging
+do i=1 to measures
   call time 'R'
-  do count; end
+  do iterations; end
   empty=time('R')+empty
 end
-empty=empty/averaging
-
+empty=empty/measures
+say
+say 'Calibration (empty DO):' empty 'secs (average of' measures')'
 
 /* Now the true timer loop .. average timing again */
 full=0
-do i=1 to averaging
+do i=1 to measures
   trace value tracevar
   call time 'R'
-  do count;
+  do iterations;
     flag=0; p0='b'
     do loop=1 to 14
       /* This is the "block" comment in loop */
@@ -117,26 +128,22 @@ do i=1 to averaging
   full=time('R')+full
   trace off
 end
-full=full/averaging
+full=full/measures
 
-looptime=(full-empty)/count
+looptime=(full-empty)/iterations
 
 /* Developer's statistics: */
-if left(tracevar,1)='O' then nop;
-else do
-  say
-  say 'Total (full DO):' full-empty 'secs (average of' averaging ,
-    'measures of' count 'iterations)'
-  say 'Time for one iteration (1000 clauses) was:' looptime 'seconds'
-end
+say
+say 'Total (full DO):' full-empty 'secs (average of' measures ,
+  'measures of' iterations 'iterations)'
+say 'Time for one iteration (1000 clauses) was:' looptime 'seconds'
 
 if looptime = 0 Then do
   say '     The granularity of the system clock appears to be too coarse to'
   say '     obtain an effective result.  Re-run this progam and increase the'
-  say '     number of iterations or the repeat count.'
+  say '     number of measures or the number of iterations.'
 end
 else do
-
   say
   say'     Performance:' format(1000/looptime,,0) 'REXX clauses per second'
   say
