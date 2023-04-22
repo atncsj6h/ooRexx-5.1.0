@@ -52,7 +52,8 @@
 # include "config.h"
 #endif
 
-#if defined( HAVE_NSGETEXECUTABLEPATH ) && defined( HAVE_DLADDR )
+#if defined( HAVE_NSGETEXECUTABLEPATH ) && defined( HAVE_DLADDR  )
+#define WITH_HARDENED_LIBRARY_ACCESS
 #include <mach-o/dyld.h>
 #endif
 
@@ -60,7 +61,7 @@
 
 int main (int argc, char **argv) {
 
-#if defined( HAVE_NSGETEXECUTABLEPATH ) && defined( HAVE_DLADDR )
+#if defined( WITH_HARDENED_LIBRARY_ACCESS  )
     Dl_info dlInfo;
 
     int RC = 0;
@@ -73,6 +74,19 @@ int main (int argc, char **argv) {
 
     char buf1[PATH_MAX+1] ;
     char buf2[PATH_MAX+1] ;
+
+    logical_t libdisp ;
+    const char* LIBDISP = getenv( "SYSLIBRARY_DEBUG" ) ;
+    if ( LIBDISP == NULL ) {
+        libdisp = 0 ;
+    }
+    else {
+        libdisp = 1 ;
+    }
+
+    RexxDirectoryObject libdispDir;
+    RexxObjectPtr libdispObj ;
+    RexxObjectPtr libdispRet ;
 #endif
 
     int   i;                             /* loop counter                      */
@@ -95,13 +109,13 @@ int main (int argc, char **argv) {
     RexxObjectPtr        result;
 
 
-#if defined( HAVE_NSGETEXECUTABLEPATH ) && defined( HAVE_DLADDR )
+#if defined( WITH_HARDENED_LIBRARY_ACCESS  )
 
-#if 0
-    fprintf( stderr, "\n");
-    fprintf( stderr, "rexx, LIBRARY_PATH congruency check at entry \n") ;
-    fprintf( stderr, "\n");
-#endif
+    if ( libdisp ) {
+        fprintf( stderr, "\n");
+        fprintf( stderr, "rexx, LIBRARY_PATH congruency check at entry \n") ;
+        fprintf( stderr, "\n");
+    }
 
     RC = _NSGetExecutablePath(prefix, &prefln) ;
     if ( RC != 0)
@@ -143,13 +157,13 @@ int main (int argc, char **argv) {
         return ( -1 ) ;
     }
 
-#if 0
-    fprintf( stderr, "\n");
-    fprintf( stderr, "rexx, LIBRARY_PATH congruency check at exit \n") ;
-    fprintf( stderr, "      expected '%s'\n", buf1 );
-    fprintf( stderr, "      received '%s'\n", buf2 );
-    fprintf( stderr, "\n");
-#endif
+    if ( libdisp ) {
+        fprintf( stderr, "\n");
+        fprintf( stderr, "rexx, LIBRARY_PATH congruency check at exit \n") ;
+        fprintf( stderr, "      expected '%s'\n", buf1 );
+        fprintf( stderr, "      received '%s'\n", buf2 );
+        fprintf( stderr, "\n");
+    }
 
 #endif
 
@@ -224,7 +238,7 @@ int main (int argc, char **argv) {
         if (argCount > 0) {
             rxargs = pgmThrdInst->NewArray(1);
             pgmThrdInst->ArrayPut(rxargs,
-                                  pgmThrdInst->NewStringFromAsciiz(arg_buffer), 1);
+                pgmThrdInst->NewStringFromAsciiz(arg_buffer), 1);
         } else {
             rxargs = pgmThrdInst->NewArray(0);
         }
@@ -244,6 +258,13 @@ int main (int argc, char **argv) {
                                   i - 1);
         }
         pgmThrdInst->DirectoryPut(dir, rxcargs, "SYSCARGS");
+
+#if defined( WITH_HARDENED_LIBRARY_ACCESS  )
+        libdispDir = (RexxDirectoryObject)pgmThrdInst->GetLocalEnvironment();
+        libdispObj = pgmThrdInst->Logical(libdisp);
+        pgmThrdInst->DirectoryPut(libdispDir, libdispObj, "LIBDISP");
+#endif
+
         // call the interpreter
         result = pgmThrdInst->CallProgram(program_name, rxargs);
         // display any error message if there is a condition.

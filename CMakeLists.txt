@@ -9,9 +9,9 @@ message( STATUS "CMake version  '${CMAKE_VERSION}'" )
 message( STATUS "Processing     '${CMAKE_CURRENT_LIST_FILE}'" )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-if( CMAKE_VERSION VERSION_LESS  3.25 )
+if( CMAKE_VERSION VERSION_LESS  3.26 )
   message( FATAL_ERROR "
- CMake '3.25' or higher is required,
+ CMake '3.26' or higher is required,
  You are running '${CMAKE_VERSION}'" )
 endif()
 cmake_minimum_required( VERSION ${CMAKE_VERSION} )
@@ -98,7 +98,6 @@ pkg_config( ${REQUIRES} )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 set( CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION ON )
-set( CPACK_WARN_ON_ABSOLUTE_INSTALL_DESTINATION ON )
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # system name
@@ -659,6 +658,21 @@ add_custom_target( portable
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 include( configurationReport OPTIONAL )
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# cpack general
+set( CPACK_WARN_ON_ABSOLUTE_INSTALL_DESTINATION ON )
+
+#- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# create a source package
+set( CPACK_BUILD_SOURCE_DIRS ${CMAKE_SOURCE_DIR} )
+set( CPACK_PACKAGE_NAME ${PROJECT} )
+set( CPACK_PACKAGE_VERSION_MAJOR ${VERSION} )
+set( CPACK_PACKAGE_VERSION_MINOR ${RELEASE} )
+set( CPACK_PACKAGE_VERSION_PATCH ${MODLEVL} )
+
+set( CPACK_SOURCE_GENERATOR "TGZ")
+set( CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${VERSION}.${RELEASE}.${MODLEVL}-source")
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 vdump( "main" "exit" )

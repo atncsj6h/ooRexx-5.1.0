@@ -61,6 +61,8 @@
 #include "SysLibrary.hpp"
 #include "SysProcess.hpp"
 
+#include "oorexxapi.h"
+
 #if defined( PRIVATE )
 #include <errno.h>
 #endif
@@ -88,13 +90,14 @@ bool SysLibrary::load(
 /******************************************************************************/
 {
 
-    const char* TRACE = getenv( "SYSLIBRARY_DEBUG" ) ;
-
-    #if 0
-    char rentBuffer[PC_PATH_MAX+PC_NAME_MAX];
-    char pathBuffer[PC_PATH_MAX+PC_NAME_MAX];
-    char  resBuffer[PC_PATH_MAX+PC_NAME_MAX];
-    #endif
+    logical_t libdisp ;
+    const char* LIBDISP = getenv( "SYSLIBRARY_DEBUG" ) ;
+    if ( LIBDISP == NULL ) {
+        libdisp = 0 ;
+    }
+    else {
+        libdisp = 1 ;
+    }
 
     char nameBuffer[PC_PATH_MAX+PC_NAME_MAX];
 
@@ -103,8 +106,7 @@ bool SysLibrary::load(
         return false;
     }
 
-
-    if ( TRACE )
+    if ( 0 )
     {
         printf("SysLibrary.cpp passed name =>'%s'\n", name );
 
@@ -116,62 +118,60 @@ bool SysLibrary::load(
         //    printf("SysLibrary.cpp will try to load the user library '%s'\n", name );
     }
 
+    if ( ( strcmp( name, "rexxapi") == 0 ) || ( strcmp( name, "rexx") == 0 ) ) {
+        //  ignore all the DYLD_/LD_ settings
+        //  perform a direct load from the runtime library path
 
-    #if 0
-    if  ( strchr(name,'/') || strchr(name,'.') )
-    {
-        char rentBuffer[PC_PATH_MAX];
-        char pathBuffer[PC_PATH_MAX];
+        sprintf(nameBuffer, "%s%s%s%s",
+            SysProcess::getLibraryLocation(),
+            SHARED_LIBRARY_PREFIX, name, SHARED_LIBRARY_SUFFIX);
 
+        if ( libdisp )
+            printf("SysLibrary.cpp trying a 'protected' load  of '%s'\n",
+                nameBuffer );
 
-        printf("SysLibrary.cpp trying a directed load for '%s' \n", name ) ;
-
-        printf("SysLibrary.cpp dirname_r  >>>%s<<<\n", dirname_r(name, rentBuffer));
-
-        printf("SysLibrary.cpp basename_r >>>%s<<<\n", basename_r(name, rentBuffer ) );
-
-        printf("SysLibrary.cpp resBuffer  >>>%s<<<\n", realpath(name, pathBuffer) );
-        printf("SysLibrary.cpp pathBuffer >>>%s<<<\n", pathBuffer );
-        return false ;
-
+        libraryHandle = dlopen(nameBuffer, RTLD_LAZY);
+        if (libraryHandle)  {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
-    #endif
 
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    APPLE manpage for dlopen is clear about the fact that the 'cwd' is searched
 
-    if ( strcmp( name, "rexxapi") && strcmp( name, "rexx") )
-    {
-        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-        APPLE manpage for dlopen is clear about the fact that the 'cwd' is searched
+    When path does not contain a slash character (i.e. it is just a leaf name),
+    dlopen() searches the following until it finds a compatible
+    Mach-O file: DYLD_LIBRARY_PATH, LD_LIBRARY_PATH, current working directory
 
-        ` When path does not contain a slash character (i.e. it is just a leaf name),
-          dlopen() searches the following until it finds a compatible
-          Mach-O file: LD_LIBRARY_PATH, DYLD_LIBRARY_PATH, current working directory
+    When path contains a slash but is not a framework path,
+    dlopen() searches the following until it finds a compatible Mach-O file:
+    DYLD_LIBRARY_PATH (with leaf name from path ),
+    then the supplied path (using current working directory for relative paths). `
 
-          When path contains a slash but is not a framework path,
-          dlopen() searches the following until it finds a compatible Mach-O file:
-          DYLD_LIBRARY_PATH (with leaf name from path ),
-          then the supplied path (using current working directory for relative paths). `
+    Linux on the other side tells that the 'cwd' is NOT searched
+    and LD_LIBRARY_PATH has to be set pointing to the 'cwd'
+    so I guess we lose nothing by forcing a cwd search
 
-        Linux on the other side tells that the 'cwd' is NOT searched
-        and LD_LIBRARY_PATH has to be set pointing to the 'cwd'
-        so I guess we lose nothing by forcing a cwd search
-
-        conclusion ...
+    conclusion ...
         for Apple/Darwin the './' is irrelevant
         for Linux the './' is nice to have to give the feeling of the same behaviour
 
-        */
+    */
 
-        // try a 'cwd' load
-        sprintf(nameBuffer, "./%s%s%s",
-            SHARED_LIBRARY_PREFIX, name, SHARED_LIBRARY_SUFFIX);
-        if ( TRACE )
-            printf("SysLibrary.cpp trying the load of '%s'\n", nameBuffer );
-        libraryHandle = dlopen(nameBuffer, RTLD_LAZY);
-        if (libraryHandle)
-        {
-            return true;
-        }
+    // try a 'cwd' load
+    sprintf(nameBuffer, "./%s%s%s",
+        SHARED_LIBRARY_PREFIX, name, SHARED_LIBRARY_SUFFIX);
+
+    if ( libdisp )
+        printf("SysLibrary.cpp trying a 'cwd' load of '%s'\n",
+            nameBuffer );
+
+    libraryHandle = dlopen(nameBuffer, RTLD_LAZY);
+    if (libraryHandle) {
+        return true;
     }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -184,9 +184,14 @@ bool SysLibrary::load(
 
     // the runtime lib directory
     sprintf(nameBuffer, "%s%s%s%s",
-        SysProcess::getLibraryLocation(), SHARED_LIBRARY_PREFIX, name, SHARED_LIBRARY_SUFFIX);
-    if ( TRACE )
-      printf("SysLibrary.cpp trying the load of '%s'\n", nameBuffer );
+        SysProcess::getLibraryLocation(),
+        SHARED_LIBRARY_PREFIX, name, SHARED_LIBRARY_SUFFIX);
+
+
+    if ( libdisp )
+        printf("SysLibrary.cpp trying a 'direct' load of '%s'\n",
+            nameBuffer );
+
     libraryHandle = dlopen(nameBuffer, RTLD_LAZY);
     if (libraryHandle)
     {
@@ -196,22 +201,20 @@ bool SysLibrary::load(
     // try an unqualified load last
     sprintf(nameBuffer, "%s%s%s",
         SHARED_LIBRARY_PREFIX, name, SHARED_LIBRARY_SUFFIX);
-    if ( TRACE )
-      printf("SysLibrary.cpp trying the load of '%s'\n", nameBuffer );
+
+    if ( libdisp )
+        printf("SysLibrary.cpp trying an 'unqualified' the load of '%s'\n",
+            nameBuffer );
+
     libraryHandle = dlopen(nameBuffer, RTLD_LAZY);
     if (libraryHandle)
     {
         return true;
     }
 
-    // try a
-    //
-
     return false;
 
 }
-
-
 /**
  * Free a loaded library if the library is still loaded.
  *
