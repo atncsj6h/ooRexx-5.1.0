@@ -516,7 +516,7 @@ endif()
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # the support files
 foreach( X path.here path.append path.remove portable-startup.sh )
-  install_X( ${support_dir}/bin/${X} )
+  install_X( ${support_dir}/${X} )
 endforeach()
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -648,8 +648,8 @@ endif()
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 add_custom_target( portable
-  COMMAND bash ${CMAKE_SOURCE_DIR}/${support_dir}/bin/portable-build.bash
-    --makeself ${CMAKE_SOURCE_DIR}/${support_dir}/bin/makeself.sh
+  COMMAND bash ${CMAKE_SOURCE_DIR}/${support_dir}/portable-build.sh
+    --makeself ${CMAKE_SOURCE_DIR}/${support_dir}/makeself.sh
     --project  ${PROJECT}
     --prefix   ${CMAKE_INSTALL_PREFIX}
     --triplet  ${VERSION_TRIPLET}
@@ -659,6 +659,7 @@ add_custom_target( portable
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 include( configurationReport OPTIONAL )
 
+if( 0 )
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # cpack general
 set( CPACK_WARN_ON_ABSOLUTE_INSTALL_DESTINATION ON )
@@ -674,9 +675,13 @@ set( CPACK_PACKAGE_VERSION_PATCH ${MODLEVL} )
 set( CPACK_SOURCE_GENERATOR "TGZ")
 set( CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${VERSION}.${RELEASE}.${MODLEVL}-source")
 
+endif( 0 )
+
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 vdump( "main" "exit" )
 
+if( 0 )
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # this must be the last statement in this file.
 include( CPack )
+endif( 0 )
