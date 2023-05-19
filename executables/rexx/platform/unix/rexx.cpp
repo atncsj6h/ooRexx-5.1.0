@@ -52,12 +52,16 @@
 # include "config.h"
 #endif
 
-#if defined( HAVE_NSGETEXECUTABLEPATH ) && defined( HAVE_DLADDR  )
-#define WITH_HARDENED_LIBRARY_ACCESS
-#include <mach-o/dyld.h>
+#if !defined( WITH_HARDENED_LIBRARY_ACCESS )
+  #if defined( HAVE_NSGETEXECUTABLEPATH ) && defined( HAVE_DLADDR  )
+  #define WITH_HARDENED_LIBRARY_ACCESS
+  #include <mach-o/dyld.h>
+  #endif
 #endif
 
 #include "oorexxapi.h"
+
+#define  ARG_BUFFER_SIZE  8192
 
 int main (int argc, char **argv) {
 
@@ -89,17 +93,23 @@ int main (int argc, char **argv) {
     RexxObjectPtr libdispRet ;
 #endif
 
-    int   i;                             /* loop counter                      */
-    int   rc = 0;                        /* actually running program RC       */
-    const char *program_name = NULL;     /* name to run                       */
-    char  arg_buffer[8192];              /* starting argument buffer          */
-    const char *cp;                      /* option character pointer          */
-    CONSTRXSTRING argument;              /* rexxstart argument                */
+    int   i;                              //  loop counter
+    int   rc = 0;                         //  actually running program RC
+    const char *program_name = NULL;      //  name to run
+
+    char *argBuffer;                      //  argument buffer at start
+    size_t argBuffer_size;                //  buffer size
+
+    char *new_argBuffer;                  //  larger buffer at frealloc
+    size_t new_argBuffer_size;            //  buffer realloc size
+
+    const char *cp;                       //  option character pointer
+    CONSTRXSTRING argument;               //  rexxstart argument
     size_t argCount = 0;
     char *ptr;
-    short rexxrc = 0;                    /* exit List array                   */
-    bool from_string = false;            /* running from command line string? */
-    bool real_argument = true;           /* running from command line string? */
+    short rexxrc = 0;                     // exit List array
+    bool from_string = false;             // running from command line string?
+    bool real_argument = true;            // running from command line string?
     RXSTRING instore[2];
 
     RexxInstance        *pgmInst;
@@ -108,6 +118,13 @@ int main (int argc, char **argv) {
     RexxDirectoryObject  dir;
     RexxObjectPtr        result;
 
+    argBuffer = (char *)malloc( ARG_BUFFER_SIZE );  //  malloc initial argBuffer
+    if ( argBuffer == NULL) {
+      fprintf(stderr, "unable to allocate argument buffer.\n");
+      return 1;
+    }
+    argBuffer_size=ARG_BUFFER_SIZE;
+    //fprintf(stderr, "allocated argBuffer to %zu .\n",argBuffer_size);
 
 #if defined( WITH_HARDENED_LIBRARY_ACCESS  )
 
@@ -167,9 +184,10 @@ int main (int argc, char **argv) {
 
 #endif
 
-    arg_buffer[0] = '\0';                /* default to no argument string     */
-    for (i = 1; i < argc; i++) {         /* loop through the arguments        */
-                                         /* is this option a switch?          */
+    argBuffer[0] = '\0';                  //  default to no argument string
+
+    for (i = 1; i < argc; i++) {          //  loop through the arguments
+                                          //  is this option a switch?
         if (program_name == NULL && (*(cp=*(argv+i)) == '-')) {
             switch (*++cp) {
                 case 'e': case 'E':      /* execute from string               */
@@ -189,6 +207,7 @@ int main (int argc, char **argv) {
                     ptr = RexxGetVersionInformation();
                     fprintf(stdout, "%s\n", ptr);
                     RexxFreeMemory(ptr);
+                    free(argBuffer) ;
                     return 0;
 
                 default:                 /* ignore other switches             */
@@ -198,9 +217,25 @@ int main (int argc, char **argv) {
             if (program_name == NULL) {  /* no name yet?                      */
                 program_name = argv[i];  /* program is first non-option       */
             } else if (real_argument) {
-                if (arg_buffer[0] != '\0') /* not the first one?              */
-                    strcat(arg_buffer, " "); /* add an blank                  */
-                strcat(arg_buffer, argv[i]);  /* add this to the arg string   */
+                if ( strlen(argv[i])+strlen(argBuffer)+256 > argBuffer_size ) {
+                    new_argBuffer_size = strlen(argv[i])+strlen(argBuffer)+256 ;
+                    new_argBuffer_size /= ARG_BUFFER_SIZE ;
+                    new_argBuffer_size += 1 ;
+                    new_argBuffer_size *= ARG_BUFFER_SIZE ;
+                    new_argBuffer=(char *)realloc(argBuffer,new_argBuffer_size);
+
+                    if ( argBuffer == NULL) {
+                        fprintf(stderr, "unable to reallocate argument buffer.\n");
+                        return 1;
+                    }
+
+                    argBuffer=new_argBuffer;    /* expand arg_buffer          */
+                    argBuffer_size=new_argBuffer_size;
+                    // fprintf(stderr, "expanded  argBuffer to %zu .\n",argBuffer_size);
+                }
+                if ( argBuffer[0] != '\0' ) /* not the first one?              */
+                    strcat( argBuffer, " " ); /* add an blank                  */
+                strcat( argBuffer, argv[i] );  /* add this to the arg string   */
                 ++argCount;
             }
             real_argument = true;
@@ -218,7 +253,7 @@ int main (int argc, char **argv) {
 
     argCount = (argCount==0) ? 0 : 1;    /* is there an argument ?            */
                                          /* make an argument                  */
-    MAKERXSTRING(argument, arg_buffer, strlen(arg_buffer));
+    MAKERXSTRING(argument, argBuffer, strlen(argBuffer));
                                          /* run this via RexxStart            */
 
     if (from_string) {
@@ -238,12 +273,15 @@ int main (int argc, char **argv) {
         if (argCount > 0) {
             rxargs = pgmThrdInst->NewArray(1);
             pgmThrdInst->ArrayPut(rxargs,
-                pgmThrdInst->NewStringFromAsciiz(arg_buffer), 1);
+                pgmThrdInst->NewStringFromAsciiz(argBuffer), 1);
         } else {
             rxargs = pgmThrdInst->NewArray(0);
         }
         // set up the C args into the .local environment
         dir = (RexxDirectoryObject)pgmThrdInst->GetLocalEnvironment();
+        //  printf( "xxxxxxxx argc       %d\n", argc);
+        //  printf( "xxxxxxxx argv[   0] %s\n", argv[0]);
+        //  printf( "xxxxxxxx argv[   1] %s\n", argv[1]);
         if ( argc > 2 )
         {
             rxcargs = pgmThrdInst->NewArray(argc - 2);
@@ -253,6 +291,7 @@ int main (int argc, char **argv) {
             rxcargs = pgmThrdInst->NewArray(0);
         }
         for (i = 2; i < argc; i++) {
+            //  printf( "xxxxxxxx argv[%4d] %s\n", i, argv[i]);
             pgmThrdInst->ArrayPut(rxcargs,
                                   pgmThrdInst->NewStringFromAsciiz(argv[i]),
                                   i - 1);
