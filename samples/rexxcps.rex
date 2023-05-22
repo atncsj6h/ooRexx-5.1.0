@@ -42,7 +42,7 @@ trace o
 
 parse arg measures iterations tracevar .
 if measures = '' then ,
-    measures=109
+    measures=101
 if iterations = '' then ,
     iterations=601
 if tracevar = '' then ,

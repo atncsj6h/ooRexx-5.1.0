@@ -62,7 +62,7 @@ endif()
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # must come before the project command
 # lowest macOS supported 10.13.6 High Sierra
-if( APPLE AND BUILD_OSX_UNIVERSAL_BINARIES )
+if( APPLE AND BUILD_UNIVERSAL_BINARIES )
   set( CMAKE_OSX_DEPLOYMENT_TARGET 10.13.6 CACHE STRING  "" FORCE)
   add_compile_options( -Wunguarded-availability )
 endif()
@@ -130,7 +130,7 @@ endif()
 set( VERSION_STRING "${VERSION_TRIPLET}" )
 set( VERSION_STRING "${VERSION_STRING}-${CMAKE_SYSTEM_PROCESSOR}" )
 
-if( APPLE AND BUILD_OSX_UNIVERSAL_BINARIES )
+if( APPLE AND BUILD_UNIVERSAL_BINARIES )
   set( CMAKE_OSX_ARCHITECTURES arm64 x86_64 )
   set( VERSION_STRING "${VERSION_STRING}-universal" )
 endif()
