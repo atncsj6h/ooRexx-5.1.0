@@ -64,6 +64,7 @@ typedef enum
     INVALID_QUEUE_NAME,
     BAD_FIFO_LIFO,
     BAD_WAIT_FLAG,
+    BAD_STORAGE,
 } ErrorCode;
 
 class ServiceException

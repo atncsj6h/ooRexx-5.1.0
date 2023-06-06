@@ -222,8 +222,8 @@ RexxReturnCode LocalQueueManager::createNamedQueue(const char *name, size_t size
         strncpy(createdName, message.nameArg, size);
         // return the dup name indicator
         *dup = message.result == DUPLICATE_QUEUE_NAME;
-        // everything worked here.
-        return RXQUEUE_OK;
+        // check if we had enough space to copy the queue name
+        return strlen(message.nameArg) < size ? RXQUEUE_OK : RXQUEUE_STORAGE;
     }
     else
     {
@@ -236,8 +236,8 @@ RexxReturnCode LocalQueueManager::createNamedQueue(const char *name, size_t size
         strncpy(createdName, message.nameArg, size);
         // by definition, this is not a duplicate
         *dup = false;
-        // everything worked here.
-        return RXQUEUE_OK;
+        // check if we had enough space to copy the queue name
+        return strlen(message.nameArg) < size ? RXQUEUE_OK : RXQUEUE_STORAGE;
     }
 }
 
@@ -544,6 +544,9 @@ RexxReturnCode LocalQueueManager::processServiceException(ServiceException *e)
 
         case BAD_WAIT_FLAG:
             return RXQUEUE_BADWAITFLAG;
+
+        case BAD_STORAGE:
+            return RXQUEUE_STORAGE;
 
         default:
             return RXQUEUE_MEMFAIL;
